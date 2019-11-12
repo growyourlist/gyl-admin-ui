@@ -1,0 +1,27 @@
+include part-header.pug
+main.flex-grow
+	.p-1
+		.section.width-max-readable.m-auto
+			h1 Enter your API URL and Key
+			input.input.p-1.m-b-1(id='gyl-api-url' name='gyl-api-url' type='text' placeholder='API URL e.g. https://example.com/gyl/')
+			input.input.p-1(id='gyl-api-key' name='gyl-api-key' type='password' placeholder='API Key')
+			button#sign-in-button.button.large.main.block.m-t-1 Save API Connection
+		.section.width-max-readable.m-auto.admin-menu(style='display:none')
+			h2 Open admin screen:
+			ul.menu.vertical.large.font-size-1p25
+				li
+					a(href='broadcast') 📮 Broadcast
+						small.m-l-0p5.text-color-default Send broadcasts to your subscribers or a segement of them.
+				li
+					a(href='emails') 💌 Emails
+						small.m-l-0p5.text-color-default Build emails that can be used in autoresponders and broadcasts.
+				li
+					a(href='autoresponders') 🤖 Autoresponders
+						small.m-l-0p5.text-color-default Construct flows of emails to send to your emails based on special rules.
+				li
+					a(href='lists') 🧮 Lists
+						small.m-l-0p5.text-color-default See an overview of your mailing lists and create new ones.
+				li
+					a(href='analytics') 📊 Analytics
+						small.m-l-0p5.text-color-default See analytics for your emails.
+include part-footer.pug

@@ -1,0 +1,18 @@
+include ../part-header.pug
+main.flex-grow
+	#site-error-container(style='display:none')
+		.p-1
+			#site-error.p-0p3.p-l-1.p-r-1.width-max-readable.m-l-auto.m-r-auto
+				p Error goes here
+	.p-1.p-t-0
+		.section.width-max-readable.m-auto
+			h1 Send broadcast
+		.section.width-max-readable.m-auto.m-b-3
+			.box.p-l-1.p-r-1.p-b-1
+				h3 Who should get the broadcast?
+				hr
+				div#lists-container
+					p: strong Which list are you sending to?
+					button#list-lists-button.button.main Load your available mailing lists
+					div#lists-list
+include ../part-footer.pug
