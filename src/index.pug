@@ -1,13 +1,13 @@
 include part-header.pug
 main.flex-grow
 	.p-1
-		.section.width-max-readable.m-auto
+		.section.width-max-readable.m-auto.api-connection-container
 			h1 Enter your API URL and Key
 			input.input.p-1.m-b-1(id='gyl-api-url' name='gyl-api-url' type='text' placeholder='API URL e.g. https://example.com/gyl/')
 			input.input.p-1(id='gyl-api-key' name='gyl-api-key' type='password' placeholder='API Key')
 			button#sign-in-button.button.large.main.block.m-t-1 Save API Connection
 		.section.width-max-readable.m-auto.admin-menu(style='display:none')
-			h2 Open admin screen:
+			h1 Open admin screen:
 			ul.menu.vertical.large.font-size-1p25
 				li
 					a(href='broadcast') 📮 Broadcast
