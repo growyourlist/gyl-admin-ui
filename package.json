@@ -1,6 +1,6 @@
 {
   "name": "gyl-admin-ui",
-  "version": "0.0.1",
+  "version": "0.0.35",
   "main": "src/index.ts",
   "repository": "https://github.com/growyourlist/gyl-admin-ui",
   "author": "https://github.com/growyourlist",
