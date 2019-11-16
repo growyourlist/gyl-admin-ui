@@ -14,6 +14,11 @@ module.exports = {
 			template: './src/broadcast/broadcast.pug',
 			chunks: ['broadcast'],
 		}),
+		new HtmlWebpackPlugin({
+			filename: 'lists/index.html',
+			template: './src/lists/lists.pug',
+			chunks: ['lists'],
+		})
 	],
 	module: {
 		rules: [
@@ -45,6 +50,7 @@ module.exports = {
 	entry: {
 		index: './src/index.ts',
 		broadcast: './src/broadcast/broadcast.ts',
+		lists: './src/lists/lists.ts',
 	},
 	output: {
 		filename: '[name].js',

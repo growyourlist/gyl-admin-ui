@@ -1,16 +1,20 @@
 import './style.scss'
-import { hsh } from './common/hsh'
+import { Elm, onDOMReady, byId, firstBySelector } from './common/hsh'
 import { showSiteError } from './common/showSiteError'
 
-const { byId, firstBySelector, onDOMReady, newElm } = hsh
-
 onDOMReady(() => {
+    if (sessionStorage.getItem('gyl-api-url')) {
+        const apiConnectionContainer = firstBySelector('.api-connection-container')
+        apiConnectionContainer.style.display = 'none'
+        const adminScreenMenu = firstBySelector('.admin-menu')
+        adminScreenMenu.style.display = null
+    }
     const signInButton = byId('sign-in-button')
-    signInButton.aEL('click', () => {
+    signInButton.on('click', () => {
         const apiUrl = byId('gyl-api-url')
         const apiKey = byId('gyl-api-key')
         if (!apiUrl.value || !apiKey.value) {
-            return showSiteError(newElm(
+            return showSiteError(new Elm(
                 'p', 'Please enter both the API URL and API key.'
             ))
         }
