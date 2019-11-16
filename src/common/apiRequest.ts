@@ -1,6 +1,6 @@
 import { log } from "./log"
 import { showSiteError } from "./showSiteError"
-import { Elm } from "./hsh"
+import { Elm } from "./hsh/hsh"
 
 export async function apiRequest(input: RequestInfo, init?: RequestInit): Promise<Response> {
 	const apiUrl = sessionStorage.getItem('gyl-api-url')

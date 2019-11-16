@@ -1,4 +1,4 @@
-import { Elm, byId } from "./hsh";
+import { Elm, byId } from "./hsh/hsh";
 
 export function showSiteError(messageElement: Elm): void {
 	const siteErrorContainer = byId('site-error-container')

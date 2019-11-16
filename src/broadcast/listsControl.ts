@@ -1,4 +1,4 @@
-import { Elm, byId, onDOMReady } from '../common/hsh'
+import { Elm, byId, onDOMReady } from '../common/hsh/hsh'
 import { List, fetchListsList } from '../common/api'
 
 onDOMReady(() => {
