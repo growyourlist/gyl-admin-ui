@@ -1,0 +1,48 @@
+include ../part-header.pug
+	.section.width-max-readable.m-auto
+		h1 Export data
+	.section.width-max-readable.m-auto.m-b-3
+		.box.p-l-1.p-r-1.p-b-1
+			h3 Which subscribers would you like to export?
+			div.m-b-1
+				label
+					input(type='radio' name='export-type' value='all' checked)
+					|
+					|
+					span All
+				br
+				label
+					input(type='radio' name='export-type' value='tags')
+					|
+					|
+					span Define tags
+			div
+				label
+					span Tag query
+					|
+					|
+					input.input(id='tag-query' type='text' name='tag-query' placeholder='E.g.: \'"tag-name1 and ("tag-name2" or "tag-name3")"\'')
+				small To query for one tag, use: 
+					q "tag-name"
+					span . To query for several tags, use:
+						|
+						|
+						q
+							span "tag-name1" and "tag-name2" and (etc...)
+					span . You can use
+					|
+					|
+					code and
+					|
+					|
+					span and
+					|
+					|
+					code or
+					|
+					|
+					span and parentheses to flexibly define exactly the subscribers you want to export. For example:
+					q "tag-name1 and ("tag-name2" or "tag-name3")"
+					span . Always include tag names in quotations.
+
+include ../part-footer.pug

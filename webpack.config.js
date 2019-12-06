@@ -7,17 +7,37 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			filename: 'index.html',
 			template: './src/index.pug',
-			chunks: ['index'],
+			chunks: ['gylBase', 'index'],
 		}),
 		new HtmlWebpackPlugin({
 			filename: 'broadcast/index.html',
 			template: './src/broadcast/broadcast.pug',
-			chunks: ['broadcast'],
+			chunks: ['gylBase', 'broadcast'],
+		}),
+		new HtmlWebpackPlugin({
+			filename: 'emails/index.html',
+			template: './src/emails/emails.pug',
+			chunks: ['gylBase', 'emails'],
+		}),
+		new HtmlWebpackPlugin({
+			filename: 'autoresponders/index.html',
+			template: './src/autoresponders/autoresponders.pug',
+			chunks: ['gylBase', 'autoresponders'],
 		}),
 		new HtmlWebpackPlugin({
 			filename: 'lists/index.html',
 			template: './src/lists/lists.pug',
-			chunks: ['lists'],
+			chunks: ['gylBase', 'lists'],
+		}),
+		new HtmlWebpackPlugin({
+			filename: 'analytics/index.html',
+			template: './src/analytics/analytics.pug',
+			chunks: ['gylBase', 'analytics'],
+		}),
+		new HtmlWebpackPlugin({
+			filename: 'export-data/index.html',
+			template: './src/export-data/export-data.pug',
+			chunks: ['gylBase', 'exportData'],
 		})
 	],
 	module: {
@@ -48,9 +68,14 @@ module.exports = {
 		extensions: ['.ts', '.pug', '.js', '.scss', '.css']
 	},
 	entry: {
+		gylBase: './src/common/gyl-base.ts',
 		index: './src/index.ts',
 		broadcast: './src/broadcast/broadcast.ts',
+		emails: './src/emails/emails.ts',
+		autoresponders: './src/autoresponders/autoresponders.ts',
 		lists: './src/lists/lists.ts',
+		analytics: './src/analytics/analytics.ts',
+		exportData: './src/export-data/export-data.ts',
 	},
 	output: {
 		filename: '[name].js',

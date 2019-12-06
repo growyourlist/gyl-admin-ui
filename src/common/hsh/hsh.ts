@@ -31,6 +31,26 @@ export const firstBySelector = (selector: string): HSHElement | null => {
 }
 
 /**
+ * Shorthand for document.querySelectorAll, returning HSHElement[]
+ * @param selector 
+ */
+export const bySelector = (selector: string): HSHElement[] => {
+	const elements = document.querySelectorAll(selector)
+	if (!elements.length) {
+		return []
+	}
+	const hshElements: HSHElement[] = []
+	elements.forEach(element => {
+		if (!(element instanceof HTMLElement)) {
+			throw new Error(`HSHElement only works with HTMLElements. Attempted to `
+				+ `convert ${(<any>element).constructor.name}`)
+			}
+		hshElements.push(new HSHElement(element))
+	})
+	return hshElements
+}
+
+/**
  * Shorthand for calling a function when the DOM is ready.
  * @param callback 
  */
@@ -78,6 +98,10 @@ export class HSHElement {
 		return this._element.classList
 	}
 
+	get parent(): HSHElement {
+		return new HSHElement(this._element.parentElement)
+	}
+
 	set text(value: string) {
 		this._element.textContent = value
 	}
@@ -108,17 +132,32 @@ export class HSHElement {
 
 	insertBefore(
 		newElement: HTMLElement | Elm,
-		existingElement: HTMLElement
+		existingElement: HTMLElement | HSHElement,
 	): HSHElement {
-		if (newElement instanceof HTMLElement) {
-			return new HSHElement(
-				this._element.insertBefore(newElement, existingElement)
-			)
+		if (existingElement instanceof HTMLElement) {
+			if (newElement instanceof HTMLElement) {
+				return new HSHElement(
+					this._element.insertBefore(newElement, existingElement)
+				)
+			}
+			if (newElement instanceof Elm) {
+				return new HSHElement(
+					this._element.insertBefore(newElement.toHTMLElement(), existingElement)
+				)
+			}
 		}
-		if (newElement instanceof Elm) {
-			return new HSHElement(
-				this._element.insertBefore(newElement.toHTMLElement(), existingElement)
-			)
+
+		if (existingElement instanceof HSHElement) {
+			if (newElement instanceof HTMLElement) {
+				return new HSHElement(
+					this._element.insertBefore(newElement, existingElement.element)
+				)
+			}
+			if (newElement instanceof Elm) {
+				return new HSHElement(
+					this._element.insertBefore(newElement.toHTMLElement(), existingElement.element)
+				)
+			}
 		}
 	}
 
@@ -133,6 +172,10 @@ export class HSHElement {
 				this._element.appendChild(element.toHTMLElement())
 			)
 		}
+	}
+
+	removeSelf() {
+		this._element.parentElement.removeChild(this._element)
 	}
 
 	/** Removes all child elements */

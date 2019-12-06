@@ -73,28 +73,37 @@ export const validateElement = (
 
 	// Perform email check using regex.
 	// See https://tylermcginnis.com/validate-email-address-javascript/
-	const emailPatternBasic = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-	const emailPatternWithLabel = /^"[^"]+" ?<[^\s@]+@[^\s@]+\.[^\s@]+>$/
 	if (validation.email && value) {
-		if (
-			value[0] === '"' && (value.length > 256 ||
-				!emailPatternWithLabel.test(value))
-		) {
-			if (linkedButton) {
-				linkedButton.disable()
+		const emailPatternWithLabel = /^.*<[^\s@]+@[^\s@]+\.[^\s@]+>$/
+		const matchesLabelPattern = emailPatternWithLabel.test(value)
+		if (matchesLabelPattern) {
+			if (value.length > 256) {
+				if (linkedButton) {
+					linkedButton.disable()
+				}
+				appendValidationMessage(validation.email.message)
+				return
 			}
-			appendValidationMessage(validation.email.message)
+	
+			// Email with label and valid length, can return at this point
 			return
 		}
-		else if (
-			value[0] !== '"' && ((value.length > 254) ||
-				!emailPatternBasic.test(value))
-		) {
+		const emailPatternBasic = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+		const matchesBasicPattern = emailPatternBasic.test(value)
+		if (matchesBasicPattern) {
+			if (value.length > 254) {
+				if (linkedButton) {
+					linkedButton.disable()
+				}
+				appendValidationMessage(validation.email.message)
+				return
+			}
+		}
+		else {
 			if (linkedButton) {
 				linkedButton.disable()
 			}
 			appendValidationMessage(validation.email.message)
-			return
 		}
 	}
 	linkedButton.enable()

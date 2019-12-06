@@ -7,15 +7,25 @@ html(lang="en")
 		title Grow Your List! - Admin
 	body.flex.flex-direction-column
 		header.p-1.background-color-main.text-color-white
-			.header-content.grid.grid-2-column-m768.align-items-center.width-max-readable.m-auto
+			.header-content.grid.header-grid-m768.align-items-center.width-max-readable.m-auto
 				h1.site-heading Grow Your List! - Admin
 				ul.site-menu.menu.text-align-right-m768.p-l-0p3.unstyled-links.horizontal
 					li
 						a(href='/') Home
-					li
+					li(style='display:none')
 						a(href='/broadcast') Broadcast
-					li
+					li(style='display:none')
+						a(href='/emails') Emails
+					li(style='display:none')
+						a(href='/autoresponders') Autoresponders
+					li(style='display:none')
 						a(href='/lists') Lists
+					li(style='display:none')
+						a(href='/analytics') Analytics
+					li(style='display:none')
+						a(href='/export-data') Export Data
+					li(style='display:none')
+						a(href='/?logout') Log out 
 		main.flex-grow
 			#site-error-container(style='display:none')
 				.p-1

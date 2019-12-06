@@ -1,6 +1,11 @@
 include ../part-header.pug
-    .section.width-max-readable.m-auto
-        h1 Lists
-        p These are your mailing lists.
-        .lists-container
+	.section.width-max-readable.m-auto
+		h1 Lists
+		div.intro-2-col-m768
+			div.flex.align-items-center
+				div.m-t-0p3.m-b-0p3 These are your mailing lists.
+			div.flex.align-items-center.justify-content-right-m768
+				button.refresh-lists-button.button.plain.block
+					<span class='refresh-icon'></span> Refresh lists
+		.lists-container.m-t-1
 include ../part-footer.pug

@@ -58,7 +58,7 @@ export async function apiRequest(input: RequestInfo, init?: RequestInit): Promis
 						{
 							type: 'a',
 							attrs: {
-								'href': '/'
+								'href': '/?refresh-session'
 							},
 						},
 						'Set API connection'

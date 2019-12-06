@@ -3,7 +3,9 @@ import { Elm, onDOMReady, byId, firstBySelector } from './common/hsh/hsh'
 import { showSiteError } from './common/showSiteError'
 
 onDOMReady(() => {
-	if (sessionStorage.getItem('gyl-api-url')) {
+	const isRefreshingSession = /\brefresh-session\b/.test(window.location.search || '')
+	const isLoggedIn = sessionStorage.getItem('gyl-api-url')
+	if (!isRefreshingSession && isLoggedIn) {
 		const apiConnectionContainer = firstBySelector('.api-connection-container')
 		apiConnectionContainer.style.display = 'none'
 		const adminScreenMenu = firstBySelector('.admin-menu')
