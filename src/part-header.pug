@@ -11,21 +11,21 @@ html(lang="en")
 				h1.site-heading Grow Your List! - Admin
 				ul.site-menu.menu.text-align-right-m768.p-l-0p3.unstyled-links.horizontal
 					li
-						a(href='/') Home
+						a(href=`${baseUrl}/index.html`) Home
 					li(style='display:none')
-						a(href='/broadcast') Broadcast
+						a(href=`${baseUrl}/broadcast/index.html`) Broadcast
 					li(style='display:none')
-						a(href='/emails') Emails
+						a(href=`${baseUrl}/emails/index.html`) Emails
 					li(style='display:none')
-						a(href='/autoresponders') Autoresponders
+						a(href=`${baseUrl}/autoresponders/index.html`) Autoresponders
 					li(style='display:none')
-						a(href='/lists') Lists
+						a(href=`${baseUrl}/lists/index.html`) Lists
 					li(style='display:none')
-						a(href='/analytics') Analytics
+						a(href=`${baseUrl}/analytics/index.html`) Analytics
 					li(style='display:none')
-						a(href='/export-data') Export Data
+						a(href=`${baseUrl}/export-data/index.html`) Export Data
 					li(style='display:none')
-						a(href='/?logout') Log out 
+						a(href=`${baseUrl}/index.html?logout`) Log out 
 		main.flex-grow
 			#site-error-container(style='display:none')
 				.p-1

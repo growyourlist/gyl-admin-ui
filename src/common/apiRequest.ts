@@ -3,7 +3,7 @@ import { showSiteError } from "./showSiteError"
 import { Elm } from "./hsh/hsh"
 
 export async function apiRequest(input: RequestInfo, init?: RequestInit): Promise<Response> {
-	const apiUrl = sessionStorage.getItem('gyl-api-url')
+	const apiUrl = localStorage.getItem('gyl-api-url')
 	const apiKey = sessionStorage.getItem('gyl-api-key')
 	if (!apiKey || !apiUrl) {
 		showSiteError(

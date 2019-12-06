@@ -8,21 +8,21 @@ include part-header.pug
 		h1 Open admin screen:
 		ul.menu.vertical.large.font-size-1p25
 			li
-				a(href='broadcast') 📮 Broadcast
+				a(href=`${baseUrl}/broadcast/index.html`) 📮 Broadcast
 					small.m-l-0p5.text-color-default Send broadcasts to your subscribers or a segement of them.
 			li
-				a(href='emails') 💌 Emails
+				a(href=`${baseUrl}/emails/index.html`) 💌 Emails
 					small.m-l-0p5.text-color-default Build emails that can be used in autoresponders and broadcasts.
 			li
-				a(href='autoresponders') 🤖 Autoresponders
+				a(href=`${baseUrl}/autoresponders/index.html`) 🤖 Autoresponders
 					small.m-l-0p5.text-color-default Construct flows of emails to send to your emails based on special rules.
 			li
-				a(href='lists') 🧮 Lists
+				a(href=`${baseUrl}/lists/index.html`) 🧮 Lists
 					small.m-l-0p5.text-color-default See an overview of your mailing lists and create new ones.
 			li
-				a(href='analytics') 📊 Analytics
+				a(href=`${baseUrl}/analytics/index.html`) 📊 Analytics
 					small.m-l-0p5.text-color-default See analytics for your emails.
 			li
-				a(href='export-data') 🚢 Export Data
+				a(href=`${baseUrl}/export-data/index.html`) 🚢 Export Data
 					small.m-l-0p5.text-color-default Export your list or part of it.
 include part-footer.pug
