@@ -86,6 +86,15 @@ export class HSHElement {
 		return null
 	}
 
+	set value(value: string) {
+		if (this._element instanceof HTMLInputElement) {
+			(<HTMLInputElement>this._element).value = value
+		}
+		if (this._element instanceof HTMLTextAreaElement) {
+			(<HTMLTextAreaElement>this._element).value = value
+		}
+	}
+
 	get element(): HTMLElement {
 		return this._element
 	}
