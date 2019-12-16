@@ -69,6 +69,15 @@ module.exports = {
 			templateParameters: {
 				baseUrl
 			},
+		}),
+		new HtmlWebpackPlugin({
+			filename: 'tools/index.html',
+			inject: 'body',
+			template: './src/tools/tools.pug',
+			chunks: ['gylBase', 'tools'],
+			templateParameters: {
+				baseUrl
+			},
 		})
 	],
 	module: {
@@ -107,6 +116,7 @@ module.exports = {
 		lists: './src/lists/lists.ts',
 		analytics: './src/analytics/analytics.ts',
 		exportData: './src/export-data/export-data.ts',
+		tools: './src/tools/tools.ts',
 	},
 	output: {
 		filename: '[name].js',

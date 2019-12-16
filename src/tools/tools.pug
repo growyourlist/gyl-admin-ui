@@ -1,0 +1,25 @@
+include ../part-header.pug
+	.section.width-max-readable.m-auto
+		h1 Tools
+		p.
+			Here is a collection of miscellaneous tools to help administer the
+			mailing list.
+		h2 View Subscriber Queue Items
+		p.lh-1p5.
+			See the items that a subscriber has in the queue. This includes items that
+			are scheduled for the future as well as the queue history of items that
+			have already been processed.
+		label(for='subscriber-email')
+			strong Subscriber Email
+		br
+		input.input.subscriber-email(
+			type='text'
+			name='subscriber-email'
+			placeholder='test@example.com'
+			data-linked-button-selector='.get-subscriber-queue-items-button'
+		)
+		br
+		button.button.main.get-subscriber-queue-items-button Get Subscriber Queue Items
+		br
+		div.subscriber-queue-items-container
+include ../part-footer.pug

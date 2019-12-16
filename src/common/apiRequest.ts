@@ -1,4 +1,3 @@
-import { log } from "./log"
 import { showSiteError } from "./showSiteError"
 import { Elm } from "./hsh/hsh"
 
@@ -43,7 +42,6 @@ export async function apiRequest(input: RequestInfo, init?: RequestInit): Promis
 		})
 		request = new Request(`${apiUrl}${input}`, requestInit)
 	}
-	log(`Making request to: ${request.url}`)
 	try {
 		const response = await fetch(request)
 		if (!response.ok) {

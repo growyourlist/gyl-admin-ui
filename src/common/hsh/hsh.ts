@@ -170,7 +170,29 @@ export class HSHElement {
 		}
 	}
 
-	append(element: HTMLElement | Elm): HSHElement {
+	prepend(element: HTMLElement | Elm | Array<HTMLElement | Elm>): HSHElement {
+		if (Array.isArray(element)) {
+			let last = null
+			element.reverse().forEach(item => last = this.prepend(item))
+			return last
+		}
+		if (element instanceof HTMLElement) {
+			this._element.prepend(element)
+			return new HSHElement(element)
+		}
+		if (element instanceof Elm) {
+			const htmlElement = element.toHTMLElement()
+			this._element.prepend(htmlElement)
+			return new HSHElement(htmlElement)
+		}
+	}
+
+	append(element: HTMLElement | Elm | Array<HTMLElement | Elm>): HSHElement {
+		if (Array.isArray(element)) {
+			let last = null
+			element.forEach(item => last = this.append(item))
+			return last
+		}
 		if (element instanceof HTMLElement) {
 			return new HSHElement(
 				this._element.appendChild(element)

@@ -9,9 +9,9 @@ html(lang="en")
 		header.p-1.background-color-main.text-color-white
 			.header-content.grid.header-grid-m768.align-items-center.width-max-readable.m-auto
 				h1.site-heading Grow Your List! - Admin
-				ul.site-menu.menu.text-align-right-m768.p-l-0p3.unstyled-links.horizontal
+				ul.site-menu.menu.list.no-style.ta-right-m768.p-l-0p3.unstyled-links.horizontal
 					li
-						a(href=`${baseUrl}/index.html`) Home
+						a.public(href=`${baseUrl}/index.html`) Home
 					li(style='display:none')
 						a(href=`${baseUrl}/broadcast/index.html`) Broadcast
 					li(style='display:none')
@@ -25,7 +25,9 @@ html(lang="en")
 					li(style='display:none')
 						a(href=`${baseUrl}/export-data/index.html`) Export Data
 					li(style='display:none')
-						a(href=`${baseUrl}/index.html?logout`) Log out 
+						a(href=`${baseUrl}/tools/index.html`) Tools
+					li(style='display:none')
+						a(href=`${baseUrl}/index.html?logout`) Log out
 		main.flex-grow
 			#site-error-container(style='display:none')
 				.p-1

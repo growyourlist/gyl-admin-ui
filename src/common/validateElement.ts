@@ -104,7 +104,10 @@ export const validateElement = (
 				linkedButton.disable()
 			}
 			appendValidationMessage(validation.email.message)
+			return
 		}
 	}
-	linkedButton.enable()
+	if (linkedButton) {
+		linkedButton.enable()
+	}
 }

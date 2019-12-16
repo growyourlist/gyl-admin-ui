@@ -5,7 +5,6 @@ import {
 	Elm,
 	byId,
 	HSHElement,
-	bySelector
 } from '../common/hsh/hsh'
 import { validateElement } from '../common/validateElement'
 
@@ -263,7 +262,7 @@ const refreshListsList = async () => {
 			{
 				type: 'ul',
 				attrs: {
-					'class': 'menu vertical large font-size-1p25 expandable-items'
+					'class': 'menu list no-style vertical bordered font-size-1p25 expandable-items'
 				}
 			},
 			lists.map(list => new Elm(
