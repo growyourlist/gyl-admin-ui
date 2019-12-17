@@ -75,6 +75,13 @@ export class HSHElement {
 		this._element = element
 	}
 
+	get checked(): boolean | null {
+		if (this._element instanceof HTMLInputElement) {
+			return (<HTMLInputElement>this._element).checked
+		}
+		return null
+	}
+
 	/** Returns the value of the element */
 	get value(): string | null {
 		if (this._element instanceof HTMLInputElement) {
@@ -82,6 +89,9 @@ export class HSHElement {
 		}
 		if (this._element instanceof HTMLTextAreaElement) {
 			return (<HTMLTextAreaElement>this._element).value
+		}
+		if (this._element instanceof HTMLSelectElement) {
+			return (<HTMLSelectElement>this._element).value
 		}
 		return null
 	}

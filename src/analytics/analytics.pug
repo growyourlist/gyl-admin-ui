@@ -1,5 +1,28 @@
 include ../part-header.pug
 	.section.width-max-readable.m-auto
-		h1 Emails
-		p In development...
+		h1 Analytics
+		p#analytics-loading-message
+		div#analytics-content(style='display:none')
+			div
+				label(for='email-select') Email
+				br
+				select#email-select(name='email-select' class='input')
+				br
+				label(for='sent-on-date') Sent on date
+				br
+				select#sent-on-date(name='sent-on-date' class='input')
+				br
+				label
+					input#show-sends-checkbox(type="checkbox" checked="true")
+					span Show sends
+				label
+					input#show-opens-checkbox(type="checkbox" checked="true")
+					span Show opens
+				label
+					input#show-clicks-checkbox(type="checkbox" checked="true")
+					span Show clicks
+				br
+				br
+				button#get-analytics-button.button.main Show Analytics
+				div#graph
 include ../part-footer.pug

@@ -31,5 +31,8 @@
   "eslintIgnore": [
     "webpack.config.js"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "@types/d3": "^5.7.2",
+    "d3": "^5.14.2"
+  }
 }
