@@ -117,12 +117,30 @@ export class HSHElement {
 		return this._element.classList
 	}
 
-	get parent(): HSHElement {
+	get parent(): HSHElement | null {
+		if (!this._element.parentElement) {
+			return null
+		}
 		return new HSHElement(this._element.parentElement)
 	}
 
 	set text(value: string) {
 		this._element.textContent = value
+	}
+
+	parentUntil(test: (elm: HSHElement) => boolean): HSHElement | null {
+		let parent = this.parent
+		do {
+			if (!parent) {
+				return null
+			}
+			if (test(parent)) {
+				return parent
+			}
+			parent = parent.parent
+		}
+		while (parent)
+		return null
 	}
 
 	show(): void {
