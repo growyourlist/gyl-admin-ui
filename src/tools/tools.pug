@@ -4,22 +4,49 @@ include ../part-header.pug
 		p.
 			Here is a collection of miscellaneous tools to help administer the
 			mailing list.
-		h2 View Subscriber Queue Items
-		p.lh-1p5.
-			See the items that a subscriber has in the queue. This includes items that
-			are scheduled for the future as well as the queue history of items that
-			have already been processed.
-		label(for='subscriber-email')
-			strong Subscriber Email
-		br
-		input.input.subscriber-email(
-			type='text'
-			name='subscriber-email'
-			placeholder='test@example.com'
-			data-linked-button-selector='.get-subscriber-queue-items-button'
-		)
-		br
-		button.button.main.get-subscriber-queue-items-button Get Subscriber Queue Items
-		br
-		div.subscriber-queue-items-container
+		div.tool-container
+			div.tool-header
+				h2 View Subscriber
+				button.button.minor.m-l-1.toggle-collapse ➕ Expand
+			div.tool.collapsed
+				p.lh-1p5.
+					View all subscriber info.
+				label(for='subscriber-info-email')
+					strong Subscriber Email
+				br
+				input.input.subscriber-info-email(
+					type='text'
+					name='subscriber-info-email'
+					placeholder='test@example.com'
+					data-linked-button-selector='.get-subscriber-info-button'
+				)
+				br
+				button.button.main.get-subscriber-info-button Get Subscriber
+				br
+				div.subscriber-info-container
+				br
+		hr
+		div.tool-container
+			div.tool-header
+				h2 View Subscriber Queue Items
+				button.button.minor.m-l-1.toggle-collapse ➕ Expand
+			div.tool.collapsed
+				p.lh-1p5.
+					See the items that a subscriber has in the queue. This includes items that
+					are scheduled for the future as well as the queue history of items that
+					have already been processed.
+				label(for='subscriber-email')
+					strong Subscriber Email
+				br
+				input.input.subscriber-email(
+					type='text'
+					name='subscriber-email'
+					placeholder='test@example.com'
+					data-linked-button-selector='.get-subscriber-queue-items-button'
+				)
+				br
+				button.button.main.get-subscriber-queue-items-button Get Subscriber Queue Items
+				br
+				div.subscriber-queue-items-container
+				br
 include ../part-footer.pug

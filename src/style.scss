@@ -321,6 +321,35 @@ body {
   }
 }
 
+.tool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tool-container {
+  > .tool.collapsed {
+    display: none;
+  }
+
+  .subscriber-info-container {
+    display: grid;
+    grid-template-rows: auto auto;
+
+    pre {
+      max-width: 100%;
+      overflow: auto;
+    }
+  }
+}
+
+@media(min-width: 958px) {
+  .tool-container .subscriber-info-container {
+    grid-template-rows: auto;
+    grid-template-columns: auto auto;
+  }
+}
+
 /**
  * Text styles
  */

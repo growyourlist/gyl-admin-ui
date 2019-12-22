@@ -1,5 +1,11 @@
 import { validateElement } from "../common/validateElement"
-import { onDOMReady, firstBySelector, Elm, HSHElement } from "../common/hsh/hsh"
+import {
+	onDOMReady,
+	firstBySelector,
+	Elm,
+	HSHElement,
+	bySelector
+} from "../common/hsh/hsh"
 import { apiRequest } from "../common/apiRequest"
 
 const validateSubscriberEmail = (inputElm: HTMLInputElement): void => {
@@ -28,7 +34,7 @@ const getQueueItemElm = (queueItem: any): Elm => {
 	if (typeof queueItem.autoresponderId === 'string') {
 		output += `Autoresponder step: ${queueItem.autoresponderId} ➡ ${
 			queueItem.autoresponderStep || '<no step defined>'
-		}`
+			}`
 	}
 	return new Elm('strong', output)
 }
@@ -78,14 +84,92 @@ const prettyJSON = (jsonString: string): string => {
 	return output
 }
 
+const addToggleCollapseListeners = () => {
+	const buttons = bySelector('.toggle-collapse')
+	buttons.forEach(button => {
+		button.on('click', () => {
+			const container = button.parentUntil(
+				elm => elm.classes.contains('tool-container')
+			)
+			if (!container) {
+				return
+			}
+			const tool = container.query('.tool')
+			if (!tool) {
+				return
+			}
+			if (tool.classes.contains('collapsed')) {
+				tool.classes.remove('collapsed')
+				button.text = '➖ Collapse'
+			}
+			else {
+				tool.classes.add('collapsed')
+				button.text = '➕ Expand'
+			}
+		})
+	})
+}
+
 onDOMReady(() => {
 	const subscriberEmailInput = firstBySelector('.subscriber-email')
-	subscriberEmailInput.on('change', function() {
+	subscriberEmailInput.on('change', function () {
 		validateSubscriberEmail(<HTMLInputElement>subscriberEmailInput.element)
 	})
-	subscriberEmailInput.on('keyup', function() {
+	subscriberEmailInput.on('keyup', function () {
 		validateSubscriberEmail(<HTMLInputElement>subscriberEmailInput.element)
 	})
+	const subscriberInfoEmailInput = firstBySelector('.subscriber-info-email')
+	subscriberInfoEmailInput.on('change', function () {
+		validateSubscriberEmail(<HTMLInputElement>subscriberInfoEmailInput.element)
+	})
+	subscriberInfoEmailInput.on('keyup', function () {
+		validateSubscriberEmail(<HTMLInputElement>subscriberInfoEmailInput.element)
+	});
+	addToggleCollapseListeners()
+
+	const getSubscriberButton = firstBySelector('.get-subscriber-info-button')
+	const handleGetSubscriberInfoButtonClick = async () => {
+		try {
+			const email = subscriberInfoEmailInput.value
+			getSubscriberButton.disable()
+			const subscriberResponse = await apiRequest(
+				`/subscriber?email=${email}`
+			)
+			const subscriber = await subscriberResponse.json()
+			const subscriberInfoContainer = firstBySelector('.subscriber-info-container')
+			subscriberInfoContainer.clear()
+			subscriberInfoContainer.append(
+				[
+					new Elm(
+						{ type: 'div', attrs: { 'class': 'subscriber-info' } },
+						[
+							new Elm('p', `Email: ${subscriber.email}`),
+							new Elm('p', `Joined: ${subscriber.joined && (new Date(
+								subscriber.joined
+							)).toISOString()}`),
+							new Elm('p', `Last Open/Click: ${
+								subscriber.lastOpenOrClick && (new Date(
+									subscriber.lastOpenOrClick
+								)).toISOString()
+							}`),
+							new Elm('p', `Tags: ${subscriber.tags && subscriber.tags.join(', ')}`)
+						]
+					),
+					new Elm(
+						{
+							type: 'pre',
+						},
+						prettyJSON(JSON.stringify(subscriber))
+					),
+				]
+			)
+			getSubscriberButton.enable()
+		}
+		catch (err) {
+			console.error(err)
+		}
+	}
+	getSubscriberButton.on('click', handleGetSubscriberInfoButtonClick)
 
 	const getItemsButton = firstBySelector('.get-subscriber-queue-items-button')
 	const handleGetItemsButtonClick = async () => {
@@ -139,11 +223,10 @@ onDOMReady(() => {
 												'class': 'button plain'
 											},
 											events: {
-												'click': function() {
+												'click': function () {
 													const button = new HSHElement(this)
 													const state = button.element.getAttribute('data-state')
 													const details = button.parent.query('.queue-item-details')
-													console.log(state)
 													if (state === null) {
 														details.append(new Elm(
 															{
