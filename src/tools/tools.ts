@@ -277,4 +277,16 @@ onDOMReady(() => {
 		}
 	}
 	getItemsButton.on('click', handleGetItemsButtonClick)
+
+	const pingButton = firstBySelector('.ping-button')
+	const handlePingButtonClick = async () => {
+		const pingResponse = await fetch(
+			`${localStorage.getItem('gyl-api-url')}/ping`,
+			{ mode: 'cors' },
+		)
+		const data = await pingResponse.json()
+		const resultContainer = firstBySelector('.ping-result-container')
+		resultContainer.prepend(new Elm({ type: 'pre' }, JSON.stringify(data)))
+	}
+	pingButton.on('click', handlePingButtonClick)
 })

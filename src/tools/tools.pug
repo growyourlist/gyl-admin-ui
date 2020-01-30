@@ -4,11 +4,11 @@ include ../part-header.pug
 		p.
 			Here is a collection of miscellaneous tools to help administer the
 			mailing list.
-		div.tool-container
-			div.tool-header
+		.tool-container
+			.tool-header
 				h2 View Subscriber
 				button.button.minor.m-l-1.toggle-collapse ➕ Expand
-			div.tool.collapsed
+			.tool.collapsed
 				p.lh-1p5.
 					View all subscriber info.
 				label(for='subscriber-info-email')
@@ -23,14 +23,14 @@ include ../part-header.pug
 				br
 				button.button.main.get-subscriber-info-button Get Subscriber
 				br
-				div.subscriber-info-container
+				.subscriber-info-container
 				br
 		hr
-		div.tool-container
-			div.tool-header
+		.tool-container
+			.tool-header
 				h2 View Subscriber Queue Items
 				button.button.minor.m-l-1.toggle-collapse ➕ Expand
-			div.tool.collapsed
+			.tool.collapsed
 				p.lh-1p5.
 					See the items that a subscriber has in the queue. This includes items that
 					are scheduled for the future as well as the queue history of items that
@@ -49,4 +49,15 @@ include ../part-header.pug
 				br
 				div.subscriber-queue-items-container
 				br
+		hr
+		.tool-container
+			.tool-header
+				h2 Ping API
+				button.button.minor.m-l-1.toggle-collapse ➕ Expand
+			.tool.collapsed
+				p.lh-1p5.
+					Send a simple get request to the API to check connectivity.
+				button.button.main.ping-button Ping
+				br
+				.ping-result-container.m-b-2
 include ../part-footer.pug
