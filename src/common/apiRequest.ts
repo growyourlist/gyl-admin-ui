@@ -24,20 +24,19 @@ export async function apiRequest(input: RequestInfo, init?: RequestInit): Promis
 	}
 
 	let request: Request = null
+	const apiKeyHeader = {
+		'X-Gyl-Auth-Key': apiKey
+	}
 	if (input instanceof Request) {
 		request = Object.assign({}, input, {
 			url: `${apiUrl}${input.url}`,
-			headers: Object.assign({}, (input.headers || {}), {
-				'x-api-key': apiKey
-			}),
+			headers: Object.assign({}, (input.headers || {}), apiKeyHeader),
 			mode: 'cors'
 		})
 	}
 	else {
 		const requestInit = Object.assign({}, (init || {}), {
-			headers: Object.assign({}, ((init && init.headers) || {}), {
-				'x-api-key': apiKey
-			}),
+			headers: Object.assign({}, ((init && init.headers) || {}), apiKeyHeader),
 			mode: 'cors'
 		})
 		request = new Request(`${apiUrl}${input}`, requestInit)
