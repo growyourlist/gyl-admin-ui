@@ -1,5 +1,110 @@
 include ../part-header.pug
 	.section.width-max-readable.m-auto
-		h1 Broadcast
-		p In development...
+		h1 Send broadcast
+	.section.width-max-readable.m-auto.m-b-3
+		.box.p-l-1.p-r-1.p-b-1.m-b-1
+			h3 Who should get the broadcast?
+			#lists-container
+				p: strong Which list are you sending to?
+				#lists-list No lists found
+			#tags-container
+				p: strong Enter the tags of subscribers who should receive this email.
+				p
+					span.m-r-0p5 Tags:
+					span#tag-list.flex-inline-list
+						span.tag Test
+						button.button.minor.m-l-0p3 Remove
+				#tags-input-container.grid.left-auto-right-max-content
+					input#new-tag-name.input
+					button#add-tag-button.button.secondary Add tag
+			#exclude-tags-container
+				p: strong Enter the tags of subscribers who should be excluded from this email.
+				p
+					span.m-r-0p5 Tags:
+					span#exclude-tag-list.flex-inline-list
+						span.tag Test
+						button.button.minor.m-l-0p3 Remove
+				#exclude-tags-input-container.grid.left-auto-right-max-content
+					input#new-exclude-tag-name.input
+					button#add-exclude-tag-button.button.secondary Add tag
+			#subscriber-properties-filter-container
+				p: strong Enter the values of other subscriber properties to filter by
+				#property-list
+					.property-box
+						input.property-name(placeholder="Property")
+						input.property-value(placeholder="Value")
+						button Delete
+					p#add-property-box
+						button#add-property Add property
+			#subscriber-interactions-container
+				p: strong Filter by subscriber interactions with earlier emails
+				#new-interaction-box
+					p
+						button#get-broadcast-history-button Load email history
+					#interaction-definition-container(style="display:none")
+						div
+							select#broadcast-history-list
+						p
+							label Sent on date
+								br
+								select#interaction-email-date(type="date")
+						label
+							input(type="radio" name="interaction-receive" value="did-receive")
+							span Did receive
+						br
+						label
+							input(type="radio" name="interaction-receive" value="did-not-receive")
+							span Did not receive
+						br
+						#clear-receive-button-container(style="display:none")
+							button#clear-receive-button Clear receive value
+						label
+							input(type="radio" name="interaction-click" value="did-click")
+							span Did click
+						br
+						label
+							input(type="radio" name="interaction-click" value="did-not-click")
+							span Did not click
+						br
+						label
+							input(type="radio" name="interaction-open" value="did-open")
+							span Did open
+						br
+						label
+							input(type="radio" name="interaction-open" value="did-not-open")
+							span Did not open
+						br
+						button#reset-interaction Reset interaction filter
+						button#add-interaction Add interaction filter
+					#interactions-list
+				p
+					| Estimated subscriber count (can take a while to load; if interactions
+					| are used, only the final result is accurate):
+					span#subscriber-count 0
+					i
+						span#subscriber-count-status
+					button#count-subscribers-button Count Subscribers
+		.box.p-l-1.p-r-1.p-b-1.m-b-1
+			h3 Which email should be sent?
+			p This must be an email template you have already created.
+			div
+				input#template-name(placeholder="e.g. TemplateName")
+		.box.p-l-1.p-r-1.p-b-1.m-b-1
+			h3 When do you want the broadcast to start sending?
+			p.
+				Leave blank to send straight away. Uses your local timezone and converts
+				to UTC time below. Will use current time if time set is in the past.
+			p
+				label Date
+				input#start-send-at-date(placeholder="Date" type="date")
+			p
+				label Time
+				input#start-send-at-time(placeholder="Time" type="time")
+			p
+				span UTC Time:
+				span#utc-time now
+			p
+				button#send-broadcast-button Send broadcast
+		#confirm-broadcast-container
+		#broadcast-log
 include ../part-footer.pug
