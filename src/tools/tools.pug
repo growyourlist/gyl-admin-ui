@@ -11,20 +11,18 @@ include ../part-header.pug
 			.tool.collapsed
 				p.lh-1p5.
 					View all subscriber info.
-				label(for='subscriber-info-email')
-					strong Subscriber Email
-				br
-				input.input.subscriber-info-email(
-					type='text'
-					name='subscriber-info-email'
-					placeholder='test@example.com'
-					data-linked-button-selector='.get-subscriber-info-button'
-				)
-				br
-				button.button.main.get-subscriber-info-button Get Subscriber
-				br
-				.subscriber-info-container
-				br
+				div
+					label(for='subscriber-info-email')
+						strong Subscriber Email
+				div
+					input.input.block.subscriber-info-email.m-b-0p5.w-100(
+						type='text'
+						name='subscriber-info-email'
+						placeholder='test@example.com'
+						data-linked-button-selector='.get-subscriber-info-button'
+					)
+					button.button.main.get-subscriber-info-button Get Subscriber
+				.subscriber-info-container.m-b-1
 		hr
 		.tool-container
 			.tool-header
@@ -35,20 +33,18 @@ include ../part-header.pug
 					See the items that a subscriber has in the queue. This includes items that
 					are scheduled for the future as well as the queue history of items that
 					have already been processed.
-				label(for='subscriber-email')
-					strong Subscriber Email
-				br
-				input.input.subscriber-email(
-					type='text'
-					name='subscriber-email'
-					placeholder='test@example.com'
-					data-linked-button-selector='.get-subscriber-queue-items-button'
-				)
-				br
-				button.button.main.get-subscriber-queue-items-button Get Subscriber Queue Items
-				br
-				div.subscriber-queue-items-container
-				br
+				div
+					label(for='subscriber-email')
+						strong Subscriber Email
+				div
+					input.input.block.subscriber-email.m-b-0p5.w-100(
+						type='text'
+						name='subscriber-email'
+						placeholder='test@example.com'
+						data-linked-button-selector='.get-subscriber-queue-items-button'
+					)
+					button.button.main.get-subscriber-queue-items-button Get Subscriber Queue Items
+				div.subscriber-queue-items-container.m-b-1
 		hr
 		.tool-container
 			.tool-header

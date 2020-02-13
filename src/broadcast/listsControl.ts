@@ -1,72 +1,83 @@
-import { Elm, byId, onDOMReady } from '../common/hsh/hsh'
-import { List, fetchListsList } from '../common/api'
+import {
+	Elm,
+	HSHElement,
+	firstBySelector,
+} from '../common/hsh/hsh';
+import { List, fetchListsList } from '../common/api';
 
-onDOMReady(() => {
-	const loadListsButton = byId('list-lists-button')
-	const listElm = byId('lists-list')
+export class ListsControl {
+	private container: HSHElement;
+	private listElement: HSHElement;
+	private changeListeners: (() => {})[];
 
-	const renderLists = (lists: List[]) => {
-		listElm.append(
+	constructor(selector: string) {
+		this.container = firstBySelector(selector);
+		this.listElement = this.container.query('#lists-list');
+		this.changeListeners = [];
+	}
+
+	private renderLists(lists: List[]) {
+		this.listElement.append(
 			new Elm(
 				{
 					type: 'div',
-					attrs: {
-						'class': 'm-t-0p5'
-					},
+					attrs: { class: 'm-t-0p5' },
 				},
-				lists.map(list => new Elm(
-					'div',
-					[
-						new Elm(
-							'label',
-							[
+				lists.map(
+					list =>
+						new Elm('div', [
+							new Elm('label', [
 								new Elm({
 									type: 'input',
 									attrs: {
-										'type': 'checkbox',
-										'value': list.id,
-										'class': 'list-id'
-									}
+										type: 'radio',
+										name: 'target-list',
+										value: list.id,
+										class: 'list-id',
+									},
 								}),
-								new Elm(
-									{ type: 'span' },
-									` ${list.name} (${list.id})`
-								)
-							]
-						)
-					]
-				))
+								new Elm({ type: 'span' }, ` ${list.name} (${list.id})`),
+							]),
+						])
+				)
 			)
-		)
+		);
+		if (lists.length === 1) {
+			this.listElement.query('[name="target-list"]').checked = true;
+		}
 	}
 
-	const getLists = async (): Promise<void> => {
+	hide() {
+		this.container.hide();
+	}
+
+	show() {
+		this.container.show();
+	}
+
+	async loadLists() {
 		try {
-			listElm.clear()
-			loadListsButton.disable()
-			listElm.append(new Elm('p', 'Loading...'))
-			const lists = await fetchListsList()
-			listElm.clear()
-			renderLists(lists)
-			loadListsButton.hide()
-		}
-		catch (err) {
-			console.error(err)
-			listElm.clear()
-			listElm.append(new Elm(
-				{
-					type: 'p',
-					attrs: {
-						'class': 'error',
+			this.listElement.clear();
+			this.listElement.append(new Elm('p', 'Loading...'));
+			const lists = await fetchListsList();
+			this.listElement.clear();
+			this.renderLists(lists);
+		} catch (err) {
+			console.error(err);
+			this.listElement.clear();
+			this.listElement.append(
+				new Elm(
+					{
+						type: 'p',
+						attrs: { class: 'color-error' },
 					},
-				},
-				`Error: ${err.message}`,
-			))
-		}
-		finally {
-			loadListsButton.enable()
+					`Error: ${err.message}`
+				)
+			);
 		}
 	}
 
-	loadListsButton.on('click', getLists)
-})
+	getList(): string {
+		return this.listElement.query('[name="target-list"]').value;
+	}
+}

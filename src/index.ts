@@ -1,4 +1,3 @@
-import './style.scss'
 import { Elm, onDOMReady, byId, firstBySelector, bySelector } from './common/hsh/hsh'
 import { showSiteError } from './common/showSiteError'
 

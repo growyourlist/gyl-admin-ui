@@ -1,12 +1,18 @@
 require('dotenv').config()
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const baseUrl = process.env.BASE_URL || 'http://localhost:8080'
 
 module.exports = {
 	entry: './src/index.ts',
 	plugins: [
+		new MiniCssExtractPlugin({
+			filename: 'style.css',
+			chunkFilename: '[id].css',
+			ignoreOrder: false,
+		}),
 		new HtmlWebpackPlugin({
 			filename: 'index.html',
 			inject: 'body',
@@ -93,15 +99,16 @@ module.exports = {
 				exclude: /node_modules/,
 			},
 			{
-				test: /\.scss$/i,
-				use: ['style-loader', 'css-loader', 'sass-loader'],
-				exclude: /node_modules/,
+				test: /\.s?css$/i,
+				use: [
+					{
+						loader: MiniCssExtractPlugin.loader,
+						options: {
+							publicPath: '../',
+						}
+					},
+					'css-loader', 'sass-loader'],
 			},
-			{
-				test: /\.css$/i,
-				use: ['style-loader', 'css-loader'],
-				exclude: /node_modules/,
-			}
 		],
 	},
 	resolve: {
