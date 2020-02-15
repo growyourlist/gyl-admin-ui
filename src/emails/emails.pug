@@ -1,5 +1,40 @@
 include ../part-header.pug
 	.section.width-max-readable.m-auto
 		h1 Emails
-		p In development...
+	.section.width-max-readable.m-auto.m-b-3
+		#email-list-container.box.p-l-1.p-r-1.p-b-1.m-b-1
+			h3 Email list
+			p#email-list-loading-status Loading (requires multiple requests)...
+			#email-list-wrapper
+				ul#email-list
+		#email-editor-container.box.p-l-1.p-r-1.p-b-1.m-b-1
+			h3 Edit email
+			p.
+				Editing an email with a new name will create a new email. Editing
+				an email with an existing name will update the current email.
+			p
+				label Email name
+				input#template-name.w-100.input
+			p
+				button#load-template-button.button.secondary Load email with given name
+				button#clear-template-editor-button.button.secondary.m-l-0p5 Reset all fields
+			p
+				label Email subject
+				input#template-subject.w-100.input
+			p
+				label
+					input#show-html-editor(type="checkbox" checked)
+					<span> </span>
+					span Show HTML editor
+			#template-editor-wrapper.grid.left-1fr-right-1fr-m900
+				#template-editor-rendered
+					#template-editor
+				#template-editor-html(style='min-height:10em;')
+			p Text version of email
+			.m-b-0p5
+				button#generate-text-email-button.button.secondary Generate text from HTML
+			textarea#template-text.input.w-100(rows="10")
+			.m-t-1
+				#create-template-output
+				button#create-update-template-button.button.main Create/update email
 include ../part-footer.pug

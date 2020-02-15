@@ -148,6 +148,10 @@ export class HSHElement {
 		return this._element.textContent;
 	}
 
+	isTag(type: string): boolean {
+		return this._element.tagName.toLocaleLowerCase() === type.toLocaleLowerCase()
+	}
+
 	parentUntil(test: (elm: HSHElement) => boolean): HSHElement | null {
 		let parent = this.parent;
 		do {

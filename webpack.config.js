@@ -9,7 +9,7 @@ module.exports = {
 	entry: './src/index.ts',
 	plugins: [
 		new MiniCssExtractPlugin({
-			filename: 'style.css',
+			filename: '[name].css',
 			chunkFilename: '[id].css',
 			ignoreOrder: false,
 		}),
@@ -109,6 +109,14 @@ module.exports = {
 					},
 					'css-loader', 'sass-loader'],
 			},
+			{
+				test: /\.svg$/,
+				use: 'html-loader',
+			},
+			{
+				test: /\.ttf$/,
+				use: 'file-loader',
+			}
 		],
 	},
 	resolve: {
