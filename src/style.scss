@@ -24,6 +24,10 @@ $breakpoint768: 768px;
 /**
  * Style defaults.
  */
+html {
+  overflow-y: scroll;
+}
+
 body {
   font-family: sans-serif;
   color: $default-text-color;
@@ -55,6 +59,10 @@ body {
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
   &[readonly] {
+    background-color: $background-color-readonly;
+  }
+
+  &[disabled] {
     background-color: $background-color-readonly;
   }
 }
@@ -576,6 +584,10 @@ body {
   width: 100%;
 }
 
+.top-0p5 {
+  top: .5rem;
+}
+
 /**
  * Layout styles
 */
@@ -597,6 +609,10 @@ body {
 
 .flex {
   display: flex;
+}
+
+.sticky {
+  position: sticky;
 }
 
 .flex-direction-column {
@@ -700,7 +716,7 @@ body {
   }
 }
 
-#email-list-wrapper {
+.list-wrapper {
   height: 10em;
   overflow: auto;
   border-radius: $border-radius-default;
@@ -742,4 +758,17 @@ body {
 .dialog-message {
   padding: 3em 1.8em;
   font-size: .82em;
+}
+
+@media(min-width:768px) {
+  #autoresponder-editor {
+    display: grid;
+    grid-template-columns: auto 15em;
+    column-gap: .5em;
+    column-rule: 1px solid grey;
+  }
+}
+
+#mermaid-container {
+  overflow: auto;
 }
