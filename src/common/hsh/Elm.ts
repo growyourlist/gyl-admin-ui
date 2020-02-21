@@ -4,7 +4,7 @@
  */
 export class Elm {
 	public type?: string
-	public attrs?: { [key: string]: string }
+	public attrs?: { [key: string]: string | boolean }
 	public events?: { [key: string]: (ev: any) => any }
 	public options?: string[]
 	public value?: string
@@ -14,12 +14,23 @@ export class Elm {
 	constructor(
 		opts: {
 			type?: keyof HTMLElementTagNameMap
-			attrs?: { [key: string]: string }
+			attrs?: { [key: string]: string | boolean }
 			events?: { [key: string]: (ev: any) => any }
 			options?: string[]
 			value?: string
 			text?: string
-		} | keyof HTMLElementTagNameMap,
+			class?: string
+			id?: string
+		} | keyof HTMLElementTagNameMap | (() => {
+			type?: keyof HTMLElementTagNameMap
+			attrs?: { [key: string]: string | boolean }
+			events?: { [key: string]: (ev: any) => any }
+			options?: string[]
+			value?: string
+			text?: string
+			class?: string
+			id?: string
+		}),
 		content?: HTMLElement | Elm | string | Array<HTMLElement | Elm | string>
 	) {
 
@@ -28,21 +39,44 @@ export class Elm {
 			this.content = content
 		}
 		else {
+			let realOps = typeof opts === 'function' ? opts() : opts;
 			if (
-				(typeof opts.text !== 'undefined') &&
+				(typeof realOps.text !== 'undefined') &&
 				(typeof content !== 'undefined')
 			) {
 				throw new Error(
 					'Either opts.text or content parameters can be set but not both.'
 				)
 			}
-			this.type = opts.type
-			this.attrs = opts.attrs
-			this.events = opts.events
-			this.options = opts.options
-			this.value = opts.value
-			if (opts.text) {
-				this.content = opts.text
+			this.type = realOps.type
+			this.attrs = realOps.attrs
+			if (realOps.class) {
+				if (this.attrs) {
+					this.attrs['class'] = `${realOps.class} ${
+						(this.attrs['class'] || '')
+					}`.trim();
+				}
+				else {
+					this.attrs = { 'class': realOps.class };
+				}
+			}
+			if (realOps.id) {
+				if (this.attrs) {
+					if (this.attrs['id']) {
+						throw new Error('Id can only be set as attribute or property but '
+						+ 'not both')
+					}
+					this.attrs['id'] = realOps.id;
+				}
+				else {
+					this.attrs = { 'id': realOps.id };
+				}
+			}
+			this.events = realOps.events
+			this.options = realOps.options
+			this.value = realOps.value
+			if (realOps.text) {
+				this.content = realOps.text
 			}
 			if (content) {
 				this.content = content
@@ -79,7 +113,12 @@ export class Elm {
 		}
 		if (this.attrs) {
 			for (let attr in this.attrs) {
-				elm.setAttribute(attr, this.attrs[attr])
+				if (typeof this.attrs[attr] === 'boolean' && this.attrs[attr]) {
+					elm.setAttribute(attr, 'true')
+				}
+				else if (typeof this.attrs[attr] === 'string') {
+					elm.setAttribute(attr, this.attrs[attr] as string)
+				}
 			}
 		}
 		if (this.events) {
@@ -92,6 +131,7 @@ export class Elm {
 				type: 'option',
 				value: option,
 				text: option,
+				attrs: { selected: option === this.value }
 			}).toHTMLElement()))
 		}
 		if (this.value && (
