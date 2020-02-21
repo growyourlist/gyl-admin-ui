@@ -1,5 +1,42 @@
 include ../part-header.pug
 	.section.width-max-readable.m-auto
-		h1 Autoresponders
-		p In development...
+		h1 🤖 Autoresponders
+	.section.width-max-readable.m-auto.m-b-3
+		#autoresponder-list-container.box.p-l-1.p-r-1.p-b-1.m-b-1
+			h3 Autoresponder list
+			#autoresponder-list-loading-status Loading...
+			#autoresponder-list-wrapper.list-wrapper
+				ul#autoresponder-list
+		#autoresponder-editor-container.box.p-l-1.p-r-1.p-b-1.m-b-1
+			h3 Edit autoresponder
+			p.
+				Editing an autoresponder with a new id will create a new autoresponder.
+				Editing an autoresponder with an existing id will update the current
+				autoresponder.
+			div.m-b-0p5
+				label Autoresponder id
+				input#autoresponder-id.w-100.input
+			div.m-b-0p5
+				label Default tag reason
+				input#autoresponder-default-tag-reason.w-100.input
+				div
+					small.
+						The tag reason is a tag name that is included when items from this
+						autoresponder are added to the queue. It makes it possible to remove
+						all related queue items when a subscriber unsubscribers from emails
+						associated with a particular tag. It can be a good idea is to use a
+						list tag, e.g. list-main, if this autoresponder is associated with
+						a particular list.
+			div
+				label Autoresponder
+				textarea#autoresponder-definition(style='display:none')
+				#autoresponder-editor
+					#mermaid-container
+					#step-editor-container
+						#step-editor.sticky.top-0p5
+			.m-t-1
+				#post-autoresponder-output
+				button#post-autoresponder-button.button.main Create/update autoresponder
+				<span> </span>
+				button#clear-autoresponder-editor-button.button.secondary Clear editor
 include ../part-footer.pug
