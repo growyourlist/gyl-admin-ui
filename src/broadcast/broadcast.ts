@@ -38,6 +38,7 @@ onDOMReady(async () => {
 		const broadcastEmailContainer = byId('broadcast-email-container');
 		const broadcastTimeContainer = byId('broadcast-time-container');
 		const templateName = byId('template-name');
+		const broadcastValidationMessage = byId('broadcast-validation-message');
 		const listsControl = new ListsControl('#lists-container');
 		listsControl.loadLists();
 		const tagsControl = new TagsControl('#tags-container');
@@ -130,8 +131,6 @@ onDOMReady(async () => {
 		const sendStatusMessage = byId('send-status-message');
 
 		sendButton.on('click', () => {
-			sendButton.hide();
-			hideInputControls();
 			const broadcastData: {
 				templateName: string;
 				runAt: number | null;
@@ -155,6 +154,27 @@ onDOMReady(async () => {
 				properties: propertiesControl.getProperties(),
 				interactions: interactionsControl.getInteractions(),
 			};
+
+			broadcastValidationMessage.clear();
+			if (!broadcastData.templateName) {
+				broadcastValidationMessage.append(new Elm({
+					type: 'p',
+					class: 'status error',
+					text: 'Please enter an email name.',
+				}))
+				return;
+			}
+			if (!broadcastData.list) {
+				broadcastValidationMessage.append(new Elm({
+					type: 'p',
+					class: 'status error',
+					text: 'Please select a list to send to.',
+				}))
+				return;
+			}
+
+			sendButton.hide();
+			hideInputControls();
 			const confirmationMessage: Elm[] = [
 				new Elm('span', `Send email: ${templateName.value}`),
 				new Elm('br'),
