@@ -772,3 +772,10 @@ body {
 #mermaid-container {
   overflow: auto;
 }
+
+#autoresponder-editor-container {
+  .template-list {
+    max-height: 10em;
+    overflow: auto;
+  }
+}

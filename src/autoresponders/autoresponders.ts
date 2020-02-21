@@ -914,18 +914,44 @@ onDOMReady(async () => {
 		return obj;
 	};
 
+	const validateAutoresponder: () => boolean | string = () => {
+		const autoresponderData = JSON.parse(definitionElm.value)
+		if (!autoresponderData.autoresponderId) {
+			return 'Please enter an Autoresponder id';
+		}
+		const { steps } = autoresponderData;
+		const stepNames = Object.keys(steps)
+		for (let i = 0; i < stepNames.length; i++) {
+			const stepName = stepNames[i];
+			if (steps[stepName].type === 'send email' && !steps[stepName].templateId) {
+				return 'Please ensure all \'send email\' steps have email ids';
+			}
+		}
+		return true;
+	}
+
+	const postAutoresponderOutput = byId('post-autoresponder-output');
 	const postAutoresponder = async () => {
+		const autoresponderData = JSON.parse(definitionElm.value)
 		const response = await apiRequest('/autoresponder', {
 			method: 'POST',
-			body: JSON.stringify(setEmptyStrToNull(JSON.parse(definitionElm.value))),
+			body: JSON.stringify(setEmptyStrToNull(autoresponderData)),
 		});
 		return await response.json();
 	};
 
-	const postAutoresponderOutput = byId('post-autoresponder-output');
 	const postAutoresponderButton = byId('post-autoresponder-button');
 	postAutoresponderButton.on('click', async () => {
 		postAutoresponderOutput.clear();
+		const errorMessage = validateAutoresponder();
+		if (typeof errorMessage === 'string') {
+			postAutoresponderOutput.append(new Elm({
+				type: 'div',
+				class: 'status m-b-1 error',
+				text: errorMessage
+			}))
+			return 
+		}
 		postAutoresponderButton.disable();
 		postAutoresponderOutput.append(
 			new Elm({
