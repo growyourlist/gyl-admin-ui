@@ -27,6 +27,7 @@ Quill.register({
 
 import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
 import { apiRequest } from '../common/apiRequest';
+import { confirmDelete } from '../common/confirmDelete';
 
 const newLinePattern = /(<\/div>|<\/p>|<br ?\/?>)(?!\n)/g;
 
@@ -55,64 +56,6 @@ const getTemplateList = async (nextToken?: string) => {
 	);
 	return await response.json();
 };
-
-/**
- * Asks the user to confirm the deletion of a template.
- * @param message
- */
-const confirmDelete = async (message: string) =>
-	new Promise(resolve => {
-		const body = new HSHElement(document.body);
-		const confirmDialog = new Elm(
-			{ type: 'div', attrs: { class: 'dialog-overlay' } },
-			new Elm({ type: 'div', attrs: { class: 'dialog-box' } }, [
-				new Elm(
-					{
-						type: 'div',
-						attrs: { class: 'dialog-message' },
-					},
-					message
-				),
-				new Elm(
-					{
-						type: 'div',
-						attrs: { class: 'dialog-buttons-box' },
-					},
-					[
-						new Elm({
-							type: 'button',
-							attrs: { class: 'ok-button' },
-							text: 'OK',
-							events: {
-								click: () => {
-									const dialog = body.query('.dialog-overlay');
-									dialog.removeSelf();
-									resolve(true);
-								},
-							},
-						}),
-						new Elm({
-							type: 'button',
-							text: 'Cancel',
-							events: {
-								// Rudimentary way to trap focus in confirm dialog
-								blur: () => {
-									body.query('.dialog-overlay .ok-button').focus();
-								},
-								click: () => {
-									const dialog = body.query('.dialog-overlay');
-									dialog.removeSelf();
-									resolve(false);
-								},
-							},
-						}),
-					]
-				),
-			])
-		);
-		body.append(confirmDialog);
-		body.query('.dialog-overlay .ok-button').focus();
-	});
 
 /** When the dom is ready... */
 onDOMReady(async () => {
@@ -209,7 +152,7 @@ onDOMReady(async () => {
 				emailList.append(
 					templateListResponse.templates.map(
 						(t: { Name: string; CreatedTimestamp: string }) =>
-							new Elm({ type: 'li' }, [
+							new Elm({ type: 'li', attrs: { 'class': 'm-b-0p3' } }, [
 								new Elm('span', t.Name),
 								' ',
 								new Elm({
@@ -220,6 +163,7 @@ onDOMReady(async () => {
 								' ',
 								new Elm({
 									type: 'button',
+									attrs: { 'class': 'button minor inline' },
 									text: 'Delete',
 									events: {
 										click: async event => {
@@ -257,6 +201,7 @@ onDOMReady(async () => {
 								' ',
 								new Elm({
 									type: 'button',
+									attrs: { 'class': 'button minor inline' },
 									text: 'Edit',
 									events: {
 										click: async event => {
@@ -288,6 +233,7 @@ onDOMReady(async () => {
 					await new Promise(resolve => setTimeout(resolve, 1000));
 				}
 			} while (nextToken);
+			byId('email-list-loading-status').clear()
 		} catch (err) {
 			console.error(err);
 			emailList.clear();
@@ -333,4 +279,10 @@ onDOMReady(async () => {
 			createUpdateButton.enable()
 		}
 	})
+
+	const urlTemplatePattern = /[?&]template=([a-zA-Z0-9-]+)/;
+	const templateNameMatch = window.location.search && window.location.search.match(urlTemplatePattern);
+	if (templateNameMatch) {
+		loadTemplateIntoEditor(templateNameMatch[1])
+	}
 });

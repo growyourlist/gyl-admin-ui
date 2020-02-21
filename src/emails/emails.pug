@@ -5,7 +5,7 @@ include ../part-header.pug
 		#email-list-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 Email list
 			p#email-list-loading-status Loading (requires multiple requests)...
-			#email-list-wrapper
+			#email-list-wrapper.list-wrapper
 				ul#email-list
 		#email-editor-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 Edit email
@@ -15,9 +15,6 @@ include ../part-header.pug
 			p
 				label Email name
 				input#template-name.w-100.input
-			p
-				button#load-template-button.button.secondary Load email with given name
-				button#clear-template-editor-button.button.secondary.m-l-0p5 Reset all fields
 			p
 				label Email subject
 				input#template-subject.w-100.input
