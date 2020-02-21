@@ -105,6 +105,10 @@ export class HSHElement {
 		return null;
 	}
 
+	get data(): DOMStringMap {
+		return this._element.dataset
+	}
+
 	get valueAsNumber(): number | null {
 		if (this._element instanceof HTMLInputElement) {
 			return (<HTMLInputElement>this._element).valueAsNumber
@@ -146,6 +150,14 @@ export class HSHElement {
 
 	get text(): string {
 		return this._element.textContent;
+	}
+
+	set html(value: string) {
+		this._element.innerHTML = value;
+	}
+
+	get html(): string {
+		return this._element.innerHTML;
 	}
 
 	isTag(type: string): boolean {
@@ -231,6 +243,26 @@ export class HSHElement {
 		}
 	}
 
+	insertAfterThis(
+		newElement: HTMLElement | Elm,
+	): HSHElement {
+		const existingElement = this._element;
+		if (existingElement instanceof HTMLElement) {
+			if (newElement instanceof HTMLElement) {
+				return new HSHElement(
+					this._element.insertAdjacentElement('afterend', newElement) as HTMLElement
+				);
+			}
+			if (newElement instanceof Elm) {
+				return new HSHElement(
+					this._element.insertAdjacentElement('afterend',
+						newElement.toHTMLElement()
+					) as HTMLElement
+				);
+			}
+		}
+	}
+
 	prepend(element: HTMLElement | Elm | Array<HTMLElement | Elm>): HSHElement {
 		if (Array.isArray(element)) {
 			let last = null;
@@ -250,6 +282,10 @@ export class HSHElement {
 
 	isEmpty(): boolean {
 		return this._element.childElementCount === 0;
+	}
+
+	isDisabled(): boolean {
+		return this._element.getAttribute('disabled') !== null
 	}
 
 	append(element: HTMLElement | Elm | Array<HTMLElement | Elm>): HSHElement {
