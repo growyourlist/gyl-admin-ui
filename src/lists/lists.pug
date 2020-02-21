@@ -8,4 +8,33 @@ include ../part-header.pug
 				button.refresh-lists-button.button.plain.block
 					<span class='refresh-icon'></span> Refresh lists
 		.lists-container.m-t-1
+		#new-list-container.m-t-1.font-size-1p25(style='display:none')
+			.grid.grid-row-gap-0p3.editor-form
+				h4 New list
+				label.m-r-1.m-t-auto.m-b-auto.inline-block(for="list-id") List Id
+					<span> </span>
+					small.
+						Used as a tag to identify relevant emails and autoresponder steps.
+						Only accepts the characters: <code>a-z</code>, <code>A-Z</code>,
+						<code>_</code>, and <code>-</code>. Maximum of 64 characters.
+				input#new-list-id.input.m-b-1p5(name="list-id" placeholder="List Id" title="The list id for existing lists is read-only." data-linked-button-selector="#create-list")
+				label.m-r-1.m-t-auto.m-b-auto.inline-block(for="list-name") List Name
+					<span> </span>
+					small How you would like to refer to the list in Grow Your List admin.
+				input#new-list-name.input.m-b-1p5(name="list-name" placeholder="List Name" data-linked-button-selector="#create-list")
+				label.m-r-1.m-t-auto.m-b-auto.inline-block(for="list-source-email") Source Email (optional)
+					<span> </span>
+					small.
+						Emails for this mailing list will your account-level default source
+						email address if one is not set here. <strong>This email must
+						be <a href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html" rel="noreferrer noopener">validated
+						in AWS</a></strong>. You can use emojis in your email address
+						as <a href="https://forums.aws.amazon.com/message.jspa?messageID=925374#925374" rel="noreferrer noopener">described 
+						in the AWS forums</a>; test thorougly!
+				input#new-list-source-email.input.m-b-1p5(name="list-source-email" placeholder="e.g. 'test@example.com' or 'Name <name@example.com>'" data-linked-button-selector="#create-list")
+				#create-list-output
+				button#create-list.button.main(data-linked-editor-selector=".list-editor-") Create List
+		.flex.align-items-center.justify-content-right-m768
+			button#new-list-button.button.plain.block
+				span ➕ New List
 include ../part-footer.pug

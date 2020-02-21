@@ -7,6 +7,7 @@ import {
 	HSHElement,
 } from '../common/hsh/hsh'
 import { validateElement } from '../common/validateElement'
+import { apiRequest } from '../common/apiRequest'
 
 /** Validates the list id input element */
 const validateListId = (inputElm: HTMLInputElement): void => {
@@ -72,13 +73,6 @@ const updateList = async (button: HTMLButtonElement) => {
 		submitButton
 	)
 
-	// TODO make this actually post to the real system.
-	console.log('Sending to POST list')
-	console.log({
-		id: editorForm.query('[name="list-id"]').value,
-		name: editorForm.query('[name="list-name"]').value,
-		sourceEmail: editorForm.query('[name="list-source-email"]').value || null,
-	})
 	submitButton.disable()
 	try {
 		const responseText = await postList({
@@ -252,6 +246,57 @@ const createListEditorContents = (list: List): Elm[] => {
 	]
 }
 
+const generateListItem = (list: List) => {
+	return new Elm(
+		{
+			type: 'li',
+			attrs: {
+				'class': 'p-1',
+				'id': list.id
+			}
+		},
+		[
+			new Elm('strong', list.name),
+			' ',
+			new Elm(
+				{
+					type: 'button',
+					attrs: {
+						'class': 'button minor m-l-1 edit',
+					},
+					events: {
+						'click': () => {
+							const listItem = byId(list.id)
+							const editButton = listItem.query('.button.edit')
+							if (listItem.classes.contains('edit-mode')) {
+								const editor = listItem.query(`.list-editor-${list.id}`)
+								editor.delete()
+								listItem.classes.remove('edit-mode', 'expanded')
+								editButton.text = '🔧 Edit'
+								return
+							}
+
+							// Turn the list item into edit mode
+							listItem.classes.add('edit-mode', 'expanded')
+							editButton.text = '❌ Close Editor'
+							listItem.append(new Elm(
+								{
+									type: 'div',
+									attrs: {
+										'class': `list-editor-${list.id}`,
+									}
+								},
+								createListEditorContents(list)
+							))
+						}
+					}
+				},
+				'🔧 Edit'
+			),
+		]
+	)
+}
+
 const refreshListsList = async () => {
 	const container = firstBySelector('.lists-container')
 	container.text = 'Loading...'
@@ -261,65 +306,122 @@ const refreshListsList = async () => {
 		new Elm(
 			{
 				type: 'ul',
-				attrs: {
-					'class': 'menu list no-style vertical bordered font-size-1p25 expandable-items'
-				}
+				id: 'lists-list',
+				class: 'menu list no-style vertical bordered font-size-1p25 expandable-items'
 			},
-			lists.map(list => new Elm(
-				{
-					type: 'li',
-					attrs: {
-						'class': 'p-1',
-						'id': list.id
-					}
-				},
-				[
-					new Elm('strong', list.name),
-					' ',
-					new Elm(
-						{
-							type: 'button',
-							attrs: {
-								'class': 'button minor m-l-1 edit',
-							},
-							events: {
-								'click': () => {
-									const listItem = byId(list.id)
-									const editButton = listItem.query('.button.edit')
-									if (listItem.classes.contains('edit-mode')) {
-										const editor = listItem.query(`.list-editor-${list.id}`)
-										editor.delete()
-										listItem.classes.remove('edit-mode', 'expanded')
-										editButton.text = '🔧 Edit'
-										return
-									}
-
-									// Turn the list item into edit mode
-									listItem.classes.add('edit-mode', 'expanded')
-									editButton.text = '❌ Close Editor'
-									listItem.append(new Elm(
-										{
-											type: 'div',
-											attrs: {
-												'class': `list-editor-${list.id}`,
-											}
-										},
-										createListEditorContents(list)
-									))
-								}
-							}
-						},
-						'🔧 Edit'
-					),
-				]
-			))
+			lists.map(list => generateListItem(list))
 		)
 	)
 }
 
+const validateNewId = async (id: string) => {
+	if (!id) {
+		throw new Error('No list id provided');
+	}
+	if (typeof id !== 'string') {
+		throw new Error('Invalid list id: not a string');
+	}
+	if (!/^[a-zA-Z0-9_-]*$/.test(id)) {
+		throw new Error('Invalid list id: contains invalid characters');
+	}
+	if (id.length > 64) {
+		throw new Error('Invalid list id: over 64 characters');
+	}
+	if (byId(id)) {
+		throw new Error('A list with this id already exists');
+	}
+};
+
+const validateNewName = async (name: string) => {
+	if (!name) {
+		throw new Error('No name provided');
+	}
+	if (typeof name !== 'string') {
+		throw new Error('Invalid list name: not a string');
+	}
+	if (name.length > 64) {
+		throw new Error('Invalid list name: over 64 characters');
+	}
+};
+
+const validateNewSourceEmail = async (email: string) => {
+	if (email === null) {
+		return; // null is a valid value
+	}
+	if (typeof email !== 'string') {
+		throw new Error('Invalid source email: not a string');
+	}
+	const emailPatternWithLabel = /^.*<[^\s@]+@[^\s@]+\.[^\s@]+>$/;
+	const matchesLabelPattern = emailPatternWithLabel.test(email);
+	if (matchesLabelPattern) {
+		if (email.length > 256) {
+			throw new Error('Invalid source email: labelled email too long');
+		}
+
+		// Email with label and valid length, can return at this point
+		return;
+	}
+	const emailPatternBasic = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	const matchesBasicPattern = emailPatternBasic.test(email);
+	if (matchesBasicPattern) {
+		if (email.length > 254) {
+			throw new Error('Invalid source email: email address too long');
+		}
+	} else {
+		throw new Error('Invalid source email: does not appear to be email');
+	}
+};
+
+
 /** When the dom is ready, fetch and display the lists. */
 onDOMReady(async () => {
 	refreshListsList()
+	const newListButton = byId('new-list-button')
 	const refreshListsButton = firstBySelector('.refresh-lists-button')
+	const newListContainer = byId('new-list-container');
+	const createListButton = byId('create-list');
+	newListButton.on('click', () => {
+		newListContainer.show();
+		newListButton.hide();
+	})
+
+	createListButton.on('click', async () => {
+		const createOutputElm = byId('create-list-output');
+		try {
+			createOutputElm.clear()
+			const list: List = {
+				id: byId('new-list-id').value,
+				name: byId('new-list-name').value,
+				sourceEmail: byId('new-list-source-email').value || null,
+			}
+			await validateNewId(list.id)
+			await validateNewName(list.name)
+			await validateNewSourceEmail(list.sourceEmail)
+			createOutputElm.append(new Elm({
+				type: 'div',
+				class: 'status m-b-1',
+				text: 'Loading...'
+			}));
+			await apiRequest('/list', {
+				method: 'POST',
+				body: JSON.stringify(list)
+			})
+			createOutputElm.clear()
+			const listsElm = byId('lists-list')
+			listsElm.append(generateListItem(list))
+			newListContainer.hide()
+			newListButton.show()
+		}
+		catch (err) {
+			createOutputElm.clear()
+			console.error(err);
+			createOutputElm.append(new Elm({
+				type: 'div',
+				class: 'status error m-b-1',
+				text: `Error creating list: ${err.message}`
+			}))
+		}
+	})
+
 	refreshListsButton.on('click', () => refreshListsList())
 })
