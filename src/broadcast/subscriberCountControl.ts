@@ -50,7 +50,7 @@ export class SubscriberCountControl {
 		let hitError = false;
 		do {
 			try {
-				const res = await apiRequest(`/subscriber-count`);
+				const res = await apiRequest(`/admin/subscriber-count`);
 				const statusResponse = await res.json();
 				this.countElm.text = statusResponse.count;
 				if (statusResponse.status === 'complete') {
@@ -75,7 +75,7 @@ export class SubscriberCountControl {
 		this.status.text = 'Counting... ';
 		this.button.disable();
 		try {
-			await apiRequest('/subscriber-count', {
+			await apiRequest('/admin/subscriber-count', {
 				method: 'POST',
 				body: JSON.stringify({ tags, excludeTags, properties, interactions }),
 			});

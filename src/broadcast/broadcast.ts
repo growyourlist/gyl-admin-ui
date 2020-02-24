@@ -276,7 +276,7 @@ onDOMReady(async () => {
 				try {
 					confirmAndSendButton.disable()
 					cancelSendButton.disable()
-					await apiRequest('/broadcast', {
+					await apiRequest('/admin/broadcast', {
 						method: 'POST',
 						body: JSON.stringify(broadcastData),
 					});

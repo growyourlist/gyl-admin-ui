@@ -67,7 +67,7 @@ export class InteractionsControl {
 	}
 
 	async loadEmailHistory() {
-		const historyRes = await apiRequest('/email-history');
+		const historyRes = await apiRequest('/admin/email-history');
 		const emailHistory = await historyRes.json();
 		const templateIds = Object.keys(emailHistory);
 		templateIds.sort((a, b) =>

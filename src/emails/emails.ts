@@ -32,7 +32,7 @@ import { confirmDelete } from '../common/confirmDelete';
 const newLinePattern = /(<\/div>|<\/p>|<br ?\/?>)(?!\n)/g;
 
 const deleteTemplate = async (templateName: string) => {
-	await apiRequest('/template', {
+	await apiRequest('/admin/template', {
 		method: 'DELETE',
 		body: JSON.stringify({ TemplateName: templateName }),
 	});
@@ -44,7 +44,7 @@ const createOrUpdateTemplate = async (templateData: {
 	HtmlPart: string;
 	TextPart: string;
 }) => {
-	await apiRequest('/template', {
+	await apiRequest('/admin/template', {
 		method: 'POST',
 		body: JSON.stringify({ templateData }),
 	});
@@ -52,7 +52,7 @@ const createOrUpdateTemplate = async (templateData: {
 
 const getTemplateList = async (nextToken?: string) => {
 	const response = await apiRequest(
-		`/templates${nextToken ? `?nextToken=${nextToken}` : ''}`
+		`/admin/templates${nextToken ? `?nextToken=${nextToken}` : ''}`
 	);
 	return await response.json();
 };
@@ -130,7 +130,7 @@ onDOMReady(async () => {
 
 	const loadTemplateIntoEditor = async (templateName: string) => {
 		const templateResponse = await apiRequest(
-			`/template?templateName=${encodeURIComponent(templateName)}`
+			`/admin/template?templateName=${encodeURIComponent(templateName)}`
 		);
 		const templateData = await templateResponse.json();
 		templateNameElm.value = templateData.TemplateName;

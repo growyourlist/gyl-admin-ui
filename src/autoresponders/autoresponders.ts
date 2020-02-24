@@ -933,7 +933,7 @@ onDOMReady(async () => {
 	const postAutoresponderOutput = byId('post-autoresponder-output');
 	const postAutoresponder = async () => {
 		const autoresponderData = JSON.parse(definitionElm.value)
-		const response = await apiRequest('/autoresponder', {
+		const response = await apiRequest('/admin/autoresponder', {
 			method: 'POST',
 			body: JSON.stringify(setEmptyStrToNull(autoresponderData)),
 		});
@@ -998,7 +998,7 @@ onDOMReady(async () => {
 
 	const loadAutoresponder = async (autoresponderId: string) => {
 		const autoresponderResponse = await apiRequest(
-			`/autoresponder?autoresponderId=${autoresponderId}`
+			`/admin/autoresponder?autoresponderId=${autoresponderId}`
 		);
 		const autoresponderData = await autoresponderResponse.json();
 		closeStepEditor();
@@ -1048,7 +1048,7 @@ onDOMReady(async () => {
 										liElement.style.color = 'grey';
 										liElement.queryAll('button').forEach(btn => btn.hide());
 										try {
-											await apiRequest('/autoresponder', {
+											await apiRequest('/admin/autoresponder', {
 												method: 'DELETE',
 												body: JSON.stringify({ autoresponderId }),
 											});
@@ -1113,7 +1113,7 @@ onDOMReady(async () => {
 		try {
 			do {
 				const response = await apiRequest(
-					`/templates${nextToken &&
+					`/admin/templates${nextToken &&
 						`?nextToken=${encodeURIComponent(nextToken)}`}`
 				);
 				const data = await response.json();
@@ -1142,7 +1142,7 @@ onDOMReady(async () => {
 				})
 			);
 			const response = await apiRequest(
-				`/autoresponders${nextToken &&
+				`/admin/autoresponders${nextToken &&
 					`?nextToken=${encodeURIComponent(nextToken)}`}`
 			);
 			const autoresponders = await response.json();

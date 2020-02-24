@@ -45,7 +45,7 @@ onDOMReady(async () => {
 	let graphInfo: any = {}
 	const loadingMessage = byId('analytics-loading-message')
 	loadingMessage.text = 'Loading...'
-	const emailHistoryResponse = await apiRequest('/email-history')
+	const emailHistoryResponse = await apiRequest('/admin/email-history')
 	const emailHistory = await emailHistoryResponse.json()
 	const emailHistoryElm = byId('email-select')
 	const templateIds = Object.keys(emailHistory)
@@ -192,7 +192,7 @@ onDOMReady(async () => {
 			const sentOnDate = byId('sent-on-date')
 			graphInfo.templateId = emailHistoryElm.value
 			graphInfo.date = sentOnDate.value
-			const analyticsResponse = await apiRequest('/email-analytics', {
+			const analyticsResponse = await apiRequest('/admin/email-analytics', {
 				method: 'POST',
 				body: JSON.stringify(graphInfo)
 			})

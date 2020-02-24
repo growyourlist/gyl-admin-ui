@@ -7,13 +7,13 @@ export interface List {
 }
 
 export const fetchListsList = async (): Promise<List[]> => {
-	const response = await apiRequest('/lists')
+	const response = await apiRequest('/admin/lists')
 	const lists = await response.json()
 	return <List[]>lists
 }
 
 export const postList = async (list: List): Promise<string> => {
-	const response = await apiRequest('/list', {
+	const response = await apiRequest('/admin/list', {
 		method: 'POST',
 		body: JSON.stringify(list)
 	})

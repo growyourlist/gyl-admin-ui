@@ -402,7 +402,7 @@ onDOMReady(async () => {
 				class: 'status m-b-1',
 				text: 'Loading...'
 			}));
-			await apiRequest('/list', {
+			await apiRequest('/admin/list', {
 				method: 'POST',
 				body: JSON.stringify(list)
 			})

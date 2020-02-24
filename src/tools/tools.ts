@@ -136,7 +136,7 @@ onDOMReady(() => {
     try {
       const email = subscriberInfoEmailInput.value;
       getSubscriberButton.disable();
-      const subscriberResponse = await apiRequest(`/subscriber?email=${email}`);
+      const subscriberResponse = await apiRequest(`/admin/subscriber?email=${email}`);
       const subscriber = await subscriberResponse.json();
       const subscriberInfoContainer = firstBySelector(
         ".subscriber-info-container"
@@ -177,7 +177,7 @@ onDOMReady(() => {
     try {
       const email = subscriberEmailInput.value;
       const itemsResponse = await apiRequest(
-        `/subscriber/queue?email=${email}`
+        `/admin/subscriber/queue?email=${email}`
       );
       const items = await itemsResponse.json();
       const container = firstBySelector(".subscriber-queue-items-container");
