@@ -48,6 +48,24 @@ include ../part-header.pug
 		hr
 		.tool-container
 			.tool-header
+				h2 Import list from CSV
+				button.button.minor.m-1-1.toggle-collapse ➕ Expand
+			.tool
+				p.lh-1p5.
+					Paste a CSV in below and click import to import a list.
+				div.m-b-1
+					textarea#import-data.input.w-100(
+						style='min-height:50vh'
+						placeholder="email,firstName,joined\n\"test@example.com\",\"Robin\",1577836800000"
+					).
+						email,firstName,joined
+				.m-b-2
+					#import-status-container.m-b-1
+					div
+						button.button.main#import-button Import
+		hr
+		.tool-container
+			.tool-header
 				h2 Ping API
 				button.button.minor.m-l-1.toggle-collapse ➕ Expand
 			.tool.collapsed

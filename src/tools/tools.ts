@@ -1,10 +1,12 @@
 import { validateElement } from "../common/validateElement";
+import { parse } from 'papaparse'
 import {
   onDOMReady,
   firstBySelector,
   Elm,
   HSHElement,
-  bySelector
+  bySelector,
+  byId
 } from "../common/hsh/hsh";
 import { apiRequest } from "../common/apiRequest";
 
@@ -341,4 +343,76 @@ onDOMReady(() => {
     }
   };
   authPingButton.on("click", handleAuthPingButtonClick);
+
+  const importButton = byId('import-button');
+  const handleImportButtonClick = async () => {
+    const statusContainerElm = byId('import-status-container');
+    try {
+      importButton.disable();
+      statusContainerElm.clear()
+      statusContainerElm.append(new Elm({
+        type: 'div',
+        class: 'status info'
+      }, 'Importing list...'));
+      const statusElm = statusContainerElm.query('.status.info');
+      const importDataElm = byId('import-data');
+      const importData = parse(importDataElm.value, {
+        header: true,
+        dynamicTyping: true,
+      });
+
+      if (importData.meta.fields.indexOf('email') < 0) {
+        throw new Error('Header row must contain "email" field name')
+      }
+      if (!importData.data.length) {
+        throw new Error('No data to import')
+      }
+      if (importData.data[0]['__parsed_extra']) {
+        throw new Error('Number of headers must match number of fields in rows')
+      }
+
+      const totalRows = importData.data.length;
+      const batchSize = 25;
+      let count = 0;
+      let batch = importData.data.splice(0, batchSize);
+      do {
+        await apiRequest('/subscribers', {
+          method: 'POST',
+          body: JSON.stringify({
+            overwriteExisting: true,
+            defaultConfirmedValue: true,
+            defaultUnsubscribedValue: false,
+          })
+        })
+        count += batch.length;
+        statusElm.text = `Imported ${count} of ${totalRows} subscriber records.`;
+        batch = importData.data.splice(0, batchSize);
+      } while (batch.length);
+
+      console.log(importData);
+      
+      // if (!headerRow.indexOf('email')) {
+      //   throw new Error('Import data must start with a header row and it ' +
+      //     'must contain email as one of the columns.')
+      // }
+
+      await new Promise(r => setTimeout(r, 1500));
+
+      statusContainerElm.clear()
+      statusContainerElm.append(new Elm({
+        type: 'div',
+        class: 'status success'
+      }, 'List imported'));
+    } catch (err) {
+      statusContainerElm.clear();
+      statusContainerElm.append(new Elm({
+        type: 'div',
+        class: 'status error'
+      }, `Error: ${err.message}`));
+    } finally {
+      importButton.enable();
+    }
+  }
+  importButton.on('click', handleImportButtonClick);
+
 });
