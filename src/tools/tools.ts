@@ -186,7 +186,7 @@ onDOMReady(() => {
       items.sort((a: any, b: any) => b.runAt - a.runAt);
       container.prepend([
         new Elm("h3", `Queue items for ${email}`),
-        new Elm(
+        !items.length ? new Elm('p', 'No queue items found') : new Elm(
           {
             type: "ol",
             attrs: {
@@ -371,25 +371,34 @@ onDOMReady(() => {
         throw new Error('Number of headers must match number of fields in rows')
       }
 
+      importData.data = importData.data.filter(item => !!item.email)
+
       const totalRows = importData.data.length;
       const batchSize = 25;
       let count = 0;
       let batch = importData.data.splice(0, batchSize);
       do {
-        await apiRequest('/subscribers', {
+        await apiRequest('/admin/subscribers', {
           method: 'POST',
           body: JSON.stringify({
-            overwriteExisting: true,
-            defaultConfirmedValue: true,
-            defaultUnsubscribedValue: false,
+            opts: {
+              skipDuplicateCheck: !!byId('import-skip-duplicate-check').checked,
+              defaultConfirmedValue: true,
+              defaultUnsubscribedValue: false,
+            },
+            subscribers: batch.map(subscriber => {
+              if (!subscriber.tags) {
+                return subscriber
+              }
+              subscriber.tags = subscriber.tags.split(',')
+              return subscriber;
+            }),
           })
         })
         count += batch.length;
         statusElm.text = `Imported ${count} of ${totalRows} subscriber records.`;
         batch = importData.data.splice(0, batchSize);
       } while (batch.length);
-
-      console.log(importData);
       
       // if (!headerRow.indexOf('email')) {
       //   throw new Error('Import data must start with a header row and it ' +

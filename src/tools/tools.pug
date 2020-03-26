@@ -50,15 +50,27 @@ include ../part-header.pug
 			.tool-header
 				h2 Import list from CSV
 				button.button.minor.m-1-1.toggle-collapse ➕ Expand
-			.tool
+			.tool.collapsed
 				p.lh-1p5.
 					Paste a CSV in below and click import to import a list.
+				p: strong Please note:
+				ul.lh-1p5
+					li If the subscriber (identified by their email address) already exists in the database, they will skipped.
+					li If the subscriber appears multiple times in the import data, only the first one instance will be used.
+					li <b>For a much faster import</b>, the above checks can be disabled using the 'Skip duplicate check' checkbox below. <strong>Please ensure there are no duplicates</strong> when doing this; otherwise duplicated subscribers will receive emails multiple times.
+					li To include tags for subscribers, include a list of tags separated by commas in a field escaped by quotation marks; e.g.: "email@example.com","tags,tagb"
+					li To automatically add subscribers to lists, include the respective list tag in the tags column; e.g.: "list-main,list-special-offer"
+				p
+					label
+						input#import-skip-duplicate-check(type="checkbox")
+						span Skip duplicate check
 				div.m-b-1
 					textarea#import-data.input.w-100(
 						style='min-height:50vh'
-						placeholder="email,firstName,joined\n\"test@example.com\",\"Robin\",1577836800000"
+						placeholder="email,firstName,tags\n\"test@example.com\",\"Robin\",\"tag-a,tab-b\""
 					).
-						email,firstName,joined
+						email,firstName,tags
+
 				.m-b-2
 					#import-status-container.m-b-1
 					div
