@@ -46,7 +46,7 @@ const createOrUpdateTemplate = async (templateData: {
 }) => {
 	await apiRequest('/admin/template', {
 		method: 'POST',
-		body: JSON.stringify({ templateData }),
+		body: JSON.stringify(templateData),
 	});
 };
 
