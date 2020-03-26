@@ -345,6 +345,8 @@ onDOMReady(async () => {
 						}
 						return {
 							id: 'step-choice',
+							type: 'select',
+							class: 'input w-100',
 							options,
 						};
 					}),
@@ -353,6 +355,7 @@ onDOMReady(async () => {
 					new Elm('div', new Elm('label', 'New or existing step name')),
 					new Elm({
 						type: 'input',
+						class: 'input w-100',
 						id: 'new-step-name',
 						events: {
 							change: event => {
@@ -372,6 +375,7 @@ onDOMReady(async () => {
 					new Elm('div', new Elm('label', 'Step type')),
 					new Elm({
 						type: 'select',
+						class: 'input w-100',
 						id: 'new-step-type',
 						options: ['send email', 'make choice based on tag', 'unsubscribe'],
 					}),
@@ -381,6 +385,7 @@ onDOMReady(async () => {
 					new Elm({
 						type: 'button',
 						id: 'create-step-button',
+						class: 'button secondary',
 						text: 'Create step',
 						events: {
 							click: () => {
@@ -403,7 +408,7 @@ onDOMReady(async () => {
 								}
 								const def = getDefinition();
 								const stepName = getCurrentStepName();
-								const actionName = `${byId('step-choice').value} Action`;
+								const actionName = `${byId('step-choice').value}Action`;
 								const updatePacket = {
 									steps: Object.assign({}, def.steps, {
 										[stepName]: Object.assign({}, def.steps[stepName], {
@@ -527,7 +532,7 @@ onDOMReady(async () => {
 		updateDefinition(
 			{
 				autoresponderId: '',
-				defaultTagReason: '',
+				defaultTagReason: 'list-default',
 				steps: {
 					Start: {
 						type: 'send email',
@@ -538,7 +543,7 @@ onDOMReady(async () => {
 			true
 		);
 		autoresponderIdElm.value = '';
-		defaultTagReasonElm.value = '';
+		defaultTagReasonElm.value = 'list-default';
 	};
 	resetDefinition();
 
@@ -693,7 +698,7 @@ onDOMReady(async () => {
 					new Elm({
 						type: 'input',
 						attrs: { id: 'tag-reason', class: 'input w-100' },
-						value: stepDef.tagReason || '',
+						value: stepDef.tagReason || defaultTagReasonElm.value || '',
 						events: {
 							keyup: () => updateStepDef('tag-reason', 'tagReason'),
 						},
@@ -854,7 +859,7 @@ onDOMReady(async () => {
 		updateDefinition(
 			{
 				autoresponderId: '',
-				defaultTagReason: '',
+				defaultTagReason: 'list-default',
 				steps: {
 					Start: {
 						type: 'send email',
