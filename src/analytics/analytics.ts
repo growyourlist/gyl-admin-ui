@@ -147,7 +147,6 @@ onDOMReady(async () => {
 		});
 		data.splice(0, 0, prepender);
 		data.push(appender);
-		console.log(data)
 		const color = scaleOrdinal().domain(groups).range(schemeDark2);
 		const colors = groups.map((n, i) => color(i.toString()));
 		const labels = (new Elm('p')).toHTMLElement();
@@ -192,10 +191,8 @@ onDOMReady(async () => {
 			const sentOnDate = byId('sent-on-date')
 			graphInfo.templateId = emailHistoryElm.value
 			graphInfo.date = sentOnDate.value
-			const analyticsResponse = await apiRequest('/admin/email-analytics', {
-				method: 'POST',
-				body: JSON.stringify(graphInfo)
-			})
+			const params = `templateId=${encodeURIComponent(graphInfo.templateId)}&date=${encodeURIComponent(graphInfo.date)}`
+			const analyticsResponse = await apiRequest(`/admin/analytics?${params}`)
 			if (!analyticsResponse.ok) {
 				throw new Error(`Failed to retrieve data. Response: ${analyticsResponse.status} ${analyticsResponse.statusText}`)
 			}
