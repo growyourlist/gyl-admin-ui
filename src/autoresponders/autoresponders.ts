@@ -975,6 +975,10 @@ onDOMReady(async () => {
 					text: 'Autoresponder created or updated',
 				})
 			);
+			if (autoresponderListElm.text.indexOf('No autoresponders') >= 0) {
+				autoresponderListElm.clear();
+			}
+			appendAutoresponderListItem({autoresponderId: autoresponderIdElm.value.trim()})
 		} catch (err) {
 			console.error(err);
 			postAutoresponderOutput.clear();
@@ -1012,6 +1016,97 @@ onDOMReady(async () => {
 		updateDefinition(autoresponderData, true);
 	};
 
+	const appendAutoresponderListItem = (autoresponder: any) => {
+		autoresponderListElm.append(
+			new Elm(
+				{
+					type: 'li',
+					class: 'm-b-0p5',
+					id: `autoresponder-li-${autoresponder.autoresponderId.toLocaleLowerCase()}`,
+				},
+				[
+					new Elm('span', autoresponder.autoresponderId),
+					' ',
+					new Elm({
+						type: 'button',
+						class: 'button minor inline',
+						text: 'Delete',
+						events: {
+							click: async () => {
+								const { autoresponderId } = autoresponder;
+								if (
+									await confirmDelete(
+										'Are you sure you want to delete the autoresponder: ' +
+											`${autoresponderId}?`
+									)
+								) {
+									const liElement = byId(
+										`autoresponder-li-${autoresponder.autoresponderId.toLocaleLowerCase()}`
+									);
+									if (liElement.query('.status')) {
+										liElement.query('.status').removeSelf();
+									}
+									liElement.style.color = 'grey';
+									liElement.queryAll('button').forEach(btn => btn.hide());
+									try {
+										await apiRequest('/admin/autoresponder', {
+											method: 'DELETE',
+											body: JSON.stringify({ autoresponderId }),
+										});
+										liElement.removeSelf();
+									} catch (err) {
+										console.error(err);
+										liElement.append(
+											new Elm({
+												type: 'span',
+												class: 'status error m-l-0p5',
+												text: `Error deleting autoresponder: ${err.message}`,
+											})
+										);
+									} finally {
+										liElement.style.color = '';
+										liElement.queryAll('button').forEach(btn => btn.show());
+									}
+								}
+							},
+						},
+					}),
+					' ',
+					new Elm({
+						type: 'button',
+						class: 'button minor inline',
+						text: 'Edit',
+						events: {
+							click: async () => {
+								const liElement = byId(
+									`autoresponder-li-${autoresponder.autoresponderId.toLocaleLowerCase()}`
+								);
+								if (liElement.query('.status')) {
+									liElement.query('.status').removeSelf();
+								}
+								liElement.queryAll('button').forEach(btn => btn.hide());
+								try {
+									await loadAutoresponder(autoresponder.autoresponderId);
+								} catch (err) {
+									console.error(err);
+									liElement.append(
+										new Elm({
+											type: 'span',
+											class: 'status error m-l-0p5',
+											text: `Error loading autoresponder: ${err.message}`,
+										})
+									);
+								} finally {
+									liElement.queryAll('button').forEach(btn => btn.show());
+								}
+							},
+						},
+					}),
+				]
+			)
+		);
+	}
+
 	const renderAutoresponderList = (list: any[]) => {
 		autoresponderListElm.clear();
 		if (!list.length) {
@@ -1021,94 +1116,7 @@ onDOMReady(async () => {
 			return;
 		}
 		list.forEach(autoresponder => {
-			autoresponderListElm.append(
-				new Elm(
-					{
-						type: 'li',
-						class: 'm-b-0p5',
-						id: `autoresponder-li-${autoresponder.autoresponderId.toLocaleLowerCase()}`,
-					},
-					[
-						new Elm('span', autoresponder.autoresponderId),
-						' ',
-						new Elm({
-							type: 'button',
-							class: 'button minor inline',
-							text: 'Delete',
-							events: {
-								click: async () => {
-									const { autoresponderId } = autoresponder;
-									if (
-										await confirmDelete(
-											'Are you sure you want to delete the autoresponder: ' +
-												`${autoresponderId}?`
-										)
-									) {
-										const liElement = byId(
-											`autoresponder-li-${autoresponder.autoresponderId.toLocaleLowerCase()}`
-										);
-										if (liElement.query('.status')) {
-											liElement.query('.status').removeSelf();
-										}
-										liElement.style.color = 'grey';
-										liElement.queryAll('button').forEach(btn => btn.hide());
-										try {
-											await apiRequest('/admin/autoresponder', {
-												method: 'DELETE',
-												body: JSON.stringify({ autoresponderId }),
-											});
-											liElement.removeSelf();
-										} catch (err) {
-											console.error(err);
-											liElement.append(
-												new Elm({
-													type: 'span',
-													class: 'status error m-l-0p5',
-													text: `Error deleting autoresponder: ${err.message}`,
-												})
-											);
-										} finally {
-											liElement.style.color = '';
-											liElement.queryAll('button').forEach(btn => btn.show());
-										}
-									}
-								},
-							},
-						}),
-						' ',
-						new Elm({
-							type: 'button',
-							class: 'button minor inline',
-							text: 'Edit',
-							events: {
-								click: async () => {
-									const liElement = byId(
-										`autoresponder-li-${autoresponder.autoresponderId.toLocaleLowerCase()}`
-									);
-									if (liElement.query('.status')) {
-										liElement.query('.status').removeSelf();
-									}
-									liElement.queryAll('button').forEach(btn => btn.hide());
-									try {
-										await loadAutoresponder(autoresponder.autoresponderId);
-									} catch (err) {
-										console.error(err);
-										liElement.append(
-											new Elm({
-												type: 'span',
-												class: 'status error m-l-0p5',
-												text: `Error loading autoresponder: ${err.message}`,
-											})
-										);
-									} finally {
-										liElement.queryAll('button').forEach(btn => btn.show());
-									}
-								},
-							},
-						}),
-					]
-				)
-			);
+			appendAutoresponderListItem(autoresponder);
 		});
 	};
 
