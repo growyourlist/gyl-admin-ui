@@ -7,12 +7,13 @@ import Snow from 'quill/themes/snow';
 import Bold from 'quill/formats/bold';
 import Underline from 'quill/formats/underline';
 import Italic from 'quill/formats/italic';
+import List, {ListItem} from 'quill/formats/list';
+import Link from 'quill/formats/link';
 import Header from 'quill/formats/header';
 import CodeBlock from 'quill/formats/code';
+import Image from 'quill/formats/image';
 
 const ace = require('ace-builds');
-// console.log(ace)
-// ace.config.set('basePath', '../');
 require('ace-builds/webpack-resolver');
 
 Quill.register({
@@ -22,7 +23,11 @@ Quill.register({
 	'formats/underline': Underline,
 	'formats/italic': Italic,
 	'formats/header': Header,
+	'formats/list': List,
+	'formats/list-item': ListItem,
 	'formats/code-block': CodeBlock,
+	'formats/link': Link,
+	'formats/image': Image,
 });
 
 import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
@@ -57,8 +62,19 @@ const getTemplateList = async (nextToken?: string) => {
 	return await response.json();
 };
 
+const getPostalAddress = async () => {
+	const response = await apiRequest('/admin/postal-address');
+	return await response.json();
+}
+
 /** When the dom is ready... */
 onDOMReady(async () => {
+
+	let postalAddress = '';
+	getPostalAddress()
+		.then(address => postalAddress = address || '')
+		.catch(err => console.error(err));
+
 	// Set up editors
 	const quillEditor = new Quill('#template-editor', {
 		theme: 'snow',
@@ -76,6 +92,42 @@ onDOMReady(async () => {
 	aceEditor.setTheme('ace/theme/monokai');
 	aceEditor.session.setMode('ace/mode/html');
 
+	const contentAlertElm = byId('content-alert');
+	const checkForPostalAddress = (range: any) => {
+		// This is the way to check for blur in quilljs
+		// https://quilljs.com/docs/api/#selection-change
+		if (!range) {
+			const text = quillEditor.getText();
+			const addressParts = postalAddress
+				.split(/[\n,]/)
+				.filter(part => !!part.trim());
+			if (!addressParts.length) {
+				return
+			}
+			let hasAddress = false;
+			if (addressParts.length === 1) {
+				hasAddress = text.indexOf(addressParts[0]) >= 0;
+			}
+			else {
+				hasAddress = (text.indexOf(addressParts[0]) >= 0) && (text.indexOf(addressParts[1]) >= 0);
+			}
+			if (!hasAddress) {
+				contentAlertElm.clear();
+				contentAlertElm.classes.add('m-t-1');
+				contentAlertElm.append(new Elm(
+					{
+						type: 'div',
+						class: 'status warning',
+					},
+					[
+						'Warning: postal address was not detected. Please ensure you ' +
+							'complying with regulations which may require a postal address.'
+					]
+				))
+			}
+		}
+	}
+
 	// Sync rendered email and HTML
 	let changeIsFromAce = false;
 	let changeIsFromQuill = false;
@@ -88,6 +140,7 @@ onDOMReady(async () => {
 		aceEditor.session.setValue(html);
 		setTimeout(() => (changeIsFromQuill = false), 100);
 	});
+	quillEditor.on('selection-change', checkForPostalAddress);
 	aceEditor.on('change', () => {
 		if (changeIsFromQuill) {
 			return;
@@ -119,6 +172,19 @@ onDOMReady(async () => {
 	generateTextButton.on('click', () => {
 		const text = quillEditor.getText();
 		byId('template-text').value = text;
+	});
+
+	// Handle insert postal address button click
+	const insertPostalAddressButton = byId('insert-postal-address');
+	insertPostalAddressButton.on('click', () => {
+		contentAlertElm.clear();
+		contentAlertElm.classes.remove('m-t-1');
+		const range = quillEditor.getSelection() as any;
+		if (range) {
+			quillEditor.insertText(range.index + range.length, postalAddress);
+		} else {
+			quillEditor.insertText(quillEditor.getLength() - 1, postalAddress);
+		}
 	});
 
 	const templateNameElm = byId('template-name');
@@ -199,6 +265,8 @@ onDOMReady(async () => {
 				text: 'Edit',
 				events: {
 					click: async event => {
+						contentAlertElm.classes.remove('m-t-1')
+						contentAlertElm.clear()
 						const name = templateData.Name;
 						const buttonElm = new HSHElement(event.target);
 						const liElm = buttonElm.parentUntil(elm => elm.isTag('li'));
@@ -269,6 +337,53 @@ onDOMReady(async () => {
 		}
 	}
 	loadTemplateList()
+
+	const sendTestEmailButton = byId('send-test-email-button');
+	const testEmailStatus = byId('test-email-status');
+	sendTestEmailButton.on('click', async () => {
+		try {
+			testEmailStatus.clear()
+			testEmailStatus.classes.add('m-t-1')
+			testEmailStatus.append(new Elm(
+				{
+					type: 'div',
+					class: 'status info',
+					text: 'Sending test email'
+				}
+			))
+			sendTestEmailButton.disable()
+			await apiRequest('/admin/single-email-send', {
+				method: 'POST',
+				body: JSON.stringify({
+					toEmailAddress: byId('test-email-recipient').value,
+					subject: templateSubjectElm.value,
+					body: {
+						text: templateTextElm.value,
+						html: quillEditor.root.innerHTML,
+					}
+				})
+			})
+			testEmailStatus.clear()
+			testEmailStatus.append(new Elm(
+				{
+					type: 'div',
+					class: 'status success',
+					text: `Test email sent`,
+				}
+			))
+		} catch (err) {
+			testEmailStatus.clear()
+			testEmailStatus.append(new Elm(
+				{
+					type: 'div',
+					class: 'status error',
+					text: `Error sending test email: ${err.message}`,
+				}
+			))
+		} finally {
+			sendTestEmailButton.enable();
+		}
+	});
 
 	// Add a listener to the create/update template button
 	const createUpdateButton = byId('create-update-template-button')

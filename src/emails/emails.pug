@@ -29,10 +29,19 @@ include ../part-header.pug
 				#template-editor-rendered
 					#template-editor
 				#template-editor-html(style='min-height:10em;')
+			div#content-alert
 			p Text version of email
 			.m-b-0p5
 				button#generate-text-email-button.button.secondary Generate text from HTML
 			textarea#template-text.input.w-100(rows="10")
+			.m-t-1
+				div
+					label(for='test-email-recipient') Test email recipient
+				div
+					input.input.w-100(type="text" id='test-email-recipient' placeholder='test@example.org')
+				#test-email-status
+				.m-t-0p5
+					button#send-test-email-button.button.secondary Send test email
 			.m-t-1
 				#create-template-output
 				button#create-update-template-button.button.main Create/update email
