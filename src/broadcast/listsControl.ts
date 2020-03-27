@@ -78,6 +78,12 @@ export class ListsControl {
 	}
 
 	getList(): string {
-		return this.listElement.query('[name="target-list"]').value;
+		const lists = this.listElement.queryAll('[name="target-list"]');
+		for (let i = 0; i < lists.length; i++) {
+			const list = lists[i];
+			if (list.checked) {
+				return list.value;
+			}
+		}
 	}
 }
