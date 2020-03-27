@@ -144,95 +144,117 @@ onDOMReady(async () => {
 
 	// Load the email list on a separate thread
 	const emailList = byId('email-list');
+
+	const generateTemplateListItem = (templateData: { Name: string; CreatedTimestamp: string }) => {
+		return new Elm({ type: 'li', attrs: { 'class': 'm-b-0p3' } }, [
+			new Elm('span', templateData.Name),
+			' ',
+			new Elm({
+				type: 'span',
+				attrs: { style: 'color:grey' },
+				text: new Date(templateData.CreatedTimestamp).toLocaleString(),
+			}),
+			' ',
+			new Elm({
+				type: 'button',
+				attrs: { 'class': 'button minor inline' },
+				text: 'Delete',
+				events: {
+					click: async event => {
+						const name = templateData.Name;
+						const buttonElm = new HSHElement(event.target);
+						const liElm = buttonElm.parentUntil(elm => elm.isTag('li'));
+						try {
+							if (
+								await confirmDelete(
+									`Are you sure you want to delete ${name}?`
+								)
+							) {
+								if (!liElm) {
+									throw new Error('Parent list item not found');
+								}
+								liElm.queryAll('button').forEach(btn => btn.disable());
+								liElm.setAttribute('style', 'color:grey');
+								await deleteTemplate(name);
+								liElm.removeSelf();
+							}
+						} catch (err) {
+							console.error(err);
+							liElm.append([
+								new Elm('span', ' '),
+								new Elm({
+									type: 'span',
+									attrs: { class: 'status error' },
+									text: err.message,
+								}),
+							]);
+						}
+					},
+				},
+			}),
+			' ',
+			new Elm({
+				type: 'button',
+				attrs: { 'class': 'button minor inline' },
+				text: 'Edit',
+				events: {
+					click: async event => {
+						const name = templateData.Name;
+						const buttonElm = new HSHElement(event.target);
+						const liElm = buttonElm.parentUntil(elm => elm.isTag('li'));
+						try {
+							liElm.queryAll('button').forEach(button => {
+								button.disable()
+							})
+							await loadTemplateIntoEditor(name);
+						} catch (err) {
+							console.error(err);
+							liElm.append([
+								new Elm('span', ' '),
+								new Elm({
+									type: 'span',
+									attrs: { class: 'status error' },
+									text: err.message,
+								}),
+							]);
+						} finally {
+							liElm.queryAll('button').forEach(button => {
+								button.enable()
+							})
+						}
+					},
+				},
+			}),
+		])
+	}
+
 	const loadTemplateList = async () => {
 		try {
 			let nextToken: string = null;
+			let templateCount = 0;
 			do {
 				const templateListResponse = await getTemplateList(nextToken);
-				emailList.append(
-					templateListResponse.templates.map(
-						(t: { Name: string; CreatedTimestamp: string }) =>
-							new Elm({ type: 'li', attrs: { 'class': 'm-b-0p3' } }, [
-								new Elm('span', t.Name),
-								' ',
-								new Elm({
-									type: 'span',
-									attrs: { style: 'color:grey' },
-									text: new Date(t.CreatedTimestamp).toLocaleString(),
-								}),
-								' ',
-								new Elm({
-									type: 'button',
-									attrs: { 'class': 'button minor inline' },
-									text: 'Delete',
-									events: {
-										click: async event => {
-											const name = t.Name;
-											const buttonElm = new HSHElement(event.target);
-											const liElm = buttonElm.parentUntil(elm => elm.isTag('li'));
-											try {
-												if (
-													await confirmDelete(
-														`Are you sure you want to delete ${name}?`
-													)
-												) {
-													if (!liElm) {
-														throw new Error('Parent list item not found');
-													}
-													liElm.queryAll('button').forEach(btn => btn.disable());
-													liElm.setAttribute('style', 'color:grey');
-													await deleteTemplate(name);
-													liElm.removeSelf();
-												}
-											} catch (err) {
-												console.error(err);
-												liElm.append([
-													new Elm('span', ' '),
-													new Elm({
-														type: 'span',
-														attrs: { class: 'status error' },
-														text: err.message,
-													}),
-												]);
-											}
-										},
-									},
-								}),
-								' ',
-								new Elm({
-									type: 'button',
-									attrs: { 'class': 'button minor inline' },
-									text: 'Edit',
-									events: {
-										click: async event => {
-											const name = t.Name;
-											const buttonElm = new HSHElement(event.target);
-											const liElm = buttonElm.parentUntil(elm => elm.isTag('li'));
-											try {
-												await loadTemplateIntoEditor(name);
-											} catch (err) {
-												console.error(err);
-												liElm.append([
-													new Elm('span', ' '),
-													new Elm({
-														type: 'span',
-														attrs: { class: 'status error' },
-														text: err.message,
-													}),
-												]);
-											}
-										},
-									},
-								}),
-							])
+				templateCount += templateListResponse.templates.length;
+				if (templateListResponse.templates.length) {
+					emailList.append(
+						templateListResponse.templates.map(
+							(t: { Name: string; CreatedTimestamp: string }) => {
+								return generateTemplateListItem(t)
+							}
+						)
 					)
-				);
+				}
 				nextToken = templateListResponse.nextToken;
 				if (nextToken) {
 					// Getting templates is limited to 1 request per second (by AWS)
 					await new Promise(resolve => setTimeout(resolve, 1000));
 				}
 			} while (nextToken);
+			if (!templateCount) {
+				emailList.append(
+					new Elm('li', new Elm('em', 'No emails found'))
+				)
+			}
 			byId('email-list-loading-status').clear()
 		} catch (err) {
 			console.error(err);
@@ -261,10 +283,17 @@ onDOMReady(async () => {
 				HtmlPart: quillEditor.root.innerHTML,
 				TextPart: templateTextElm.value,
 			})
+			if (emailList.text.indexOf('No emails') >= 0) {
+				emailList.clear();
+			}
+			emailList.append(generateTemplateListItem({
+				CreatedTimestamp: new Date().toISOString(),
+				Name: templateNameElm.value,
+			}));
 			createUpdateStatus.append(new Elm({
 				type: 'p',
 				attrs: { 'class': 'status success' },
-				text: 'Template updated or created',
+				text: 'Email updated or created',
 			}))
 		}
 		catch (err) {
@@ -272,7 +301,7 @@ onDOMReady(async () => {
 			createUpdateStatus.append(new Elm({
 				type: 'p',
 				attrs: { 'class': 'status error' },
-				text: `Error creating or updating template: ${err.message}`,
+				text: `Error creating or updating email: ${err.message}`,
 			}))
 		}
 		finally {
