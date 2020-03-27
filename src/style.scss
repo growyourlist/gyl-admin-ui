@@ -8,7 +8,8 @@ $error-text-color: #d20e04;
 $error-text-background: #fff0eb;
 $success-text-color: #037503;
 $success-text-background: #eef9ee;
-$warning-text-color: rgb(179, 117, 4);
+$warning-text-color: rgb(116, 54, 4);
+$warning-text-background: rgb(251, 220, 169);
 $background-color-highlight-faint: #f1fff9;
 $background-color-highlight: #46ce95;
 $background-color-highlight-darkened: #25a06d;
@@ -282,7 +283,13 @@ body {
 		color: $info-text-color;
 		border-left-color: $info-text-color;
 		background-color: $info-text-background;
-	}
+  }
+  
+  &.warning {
+    color: $warning-text-color;
+    border-left-color: $warning-text-color;
+    background-color: $warning-text-background;
+  }
 
 	&.error {
 		color: $error-text-color;
