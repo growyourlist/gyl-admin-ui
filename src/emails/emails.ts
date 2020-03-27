@@ -34,7 +34,7 @@ import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
 import { apiRequest } from '../common/apiRequest';
 import { confirmDelete } from '../common/confirmDelete';
 
-const newLinePattern = /(<\/div>|<\/p>|<br ?\/?>)(?!\n)/g;
+const newLinePattern = /(<\/div>|<\/p>|<\/h[1-6]>|<\/[ou]l>|<[ou]l>|<\/li>|<br ?\/?>)(?!\n)/g;
 
 const deleteTemplate = async (templateName: string) => {
 	await apiRequest('/admin/template', {
@@ -67,12 +67,22 @@ const getPostalAddress = async () => {
 	return await response.json();
 }
 
+const getUnsubscribeLink = async () => {
+	const response = await apiRequest('/admin/unsubscribe-link');
+	return await response.json();
+}
+
 /** When the dom is ready... */
 onDOMReady(async () => {
 
 	let postalAddress = '';
 	getPostalAddress()
 		.then(address => postalAddress = address || '')
+		.catch(err => console.error(err));
+	
+	let unsubscribeLink = '';
+	getUnsubscribeLink()
+		.then(link => unsubscribeLink = link || '')
 		.catch(err => console.error(err));
 
 	// Set up editors
@@ -170,7 +180,26 @@ onDOMReady(async () => {
 	// Handle generate text button click
 	const generateTextButton = byId('generate-text-email-button');
 	generateTextButton.on('click', () => {
-		const text = quillEditor.getText();
+		let text = '';
+		const contentsDelta = (quillEditor.getContents() || {ops: []}) as {ops: any[]};
+		const contents = contentsDelta.ops;
+		for (let i = 0; i < contents.length; i++) {
+			const item = contents[i];
+			if (typeof item === 'object') {
+				if (typeof item.insert === 'string') {
+					text += item.insert
+				}
+				if (typeof item.attributes === 'object') {
+					if (typeof item.attributes.link === 'string' && item.attributes.link) {
+						text += ` ${item.attributes.link}`
+					}
+					if (item.attributes.list) {
+						const lastNewLineIndex = text.lastIndexOf('\n', text.lastIndexOf('\n')-1) + 1;
+						text = text.slice(0, lastNewLineIndex) + '- ' + text.slice(lastNewLineIndex);
+					}
+				}
+			}
+		}
 		byId('template-text').value = text;
 	});
 
@@ -184,6 +213,30 @@ onDOMReady(async () => {
 			quillEditor.insertText(range.index + range.length, postalAddress);
 		} else {
 			quillEditor.insertText(quillEditor.getLength() - 1, postalAddress);
+		}
+	});
+
+	const insertUnsubscribeLinkButton = byId('insert-unsubscribe-link');
+	insertUnsubscribeLinkButton.on('click', () => {
+		contentAlertElm.clear();
+		contentAlertElm.classes.remove('m-t-1');
+		const range = quillEditor.getSelection() as any;
+		if (range) {
+			quillEditor.insertText(
+				range.index + range.length,
+				'Unsubscribe',
+				{
+					link: unsubscribeLink
+				}
+			);
+		} else {
+			quillEditor.insertText(
+				quillEditor.getLength() - 1,
+				'Unsubscribe',
+				{
+					link: unsubscribeLink
+				}
+			);
 		}
 	});
 
