@@ -22,6 +22,7 @@ include ../part-header.pug
 						data-linked-button-selector='.get-subscriber-info-button'
 					)
 					button.button.main.get-subscriber-info-button Get Subscriber
+					#subscriber-error-container
 				.subscriber-info-container.m-b-1
 		hr
 		.tool-container
@@ -59,7 +60,7 @@ include ../part-header.pug
 					li If the subscriber appears multiple times in the import data, only the first one instance will be used.
 					li <b>For a much faster import</b>, the above checks can be disabled using the 'Skip duplicate check' checkbox below. <strong>Please ensure there are no duplicates</strong> when doing this; otherwise duplicated subscribers will receive emails multiple times.
 					li To include tags for subscribers, include a list of tags separated by commas in a field escaped by quotation marks; e.g.: "email@example.com","tags,tagb"
-					li To automatically add subscribers to lists, include the respective list tag in the tags column; e.g.: "list-main,list-special-offer"
+					li <b>Subscribers must have at least one list tag to be able to send to them</b>. This basically means one tag starting with <q>list-</q>. To automatically add subscribers to lists, include the respective list tag or tags in the tags column; e.g.: "list-main,list-subgroup". Then, ensure you have a list with a list id that is the same as the tag in your <a href="/lists/index.html">lists</a>.
 				p
 					label
 						input#import-skip-duplicate-check(type="checkbox")

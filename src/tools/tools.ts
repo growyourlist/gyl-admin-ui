@@ -135,10 +135,13 @@ onDOMReady(() => {
 
   const getSubscriberButton = firstBySelector(".get-subscriber-info-button");
   const handleGetSubscriberInfoButtonClick = async () => {
+    const errorContainer = byId('subscriber-error-container');
     try {
+      errorContainer.classes.remove('m-t-1');
+      errorContainer.clear();
       const email = subscriberInfoEmailInput.value;
       getSubscriberButton.disable();
-      const subscriberResponse = await apiRequest(`/admin/subscriber?email=${email}`);
+      const subscriberResponse = await apiRequest(`/admin/subscriber?email=${encodeURIComponent(email)}`);
       const subscriber = await subscriberResponse.json();
       const subscriberInfoContainer = firstBySelector(
         ".subscriber-info-container"
@@ -168,7 +171,27 @@ onDOMReady(() => {
       ]);
       getSubscriberButton.enable();
     } catch (err) {
-      console.error(err);
+      if (/\b404\b/.test(err.message)) {
+        errorContainer.classes.add('m-t-1');
+        errorContainer.append(new Elm(
+          {
+            type: 'div',
+            class: 'status error',
+            text: 'Subscriber not found'
+          }
+        ))
+      }
+      else {
+        console.error(err)
+        errorContainer.classes.add('m-t-1');
+        errorContainer.append(new Elm(
+          {
+            type: 'div',
+            class: 'status error',
+            text: `Error getting subscriber: ${err.message}`
+          }
+        ))
+      }
     }
   };
   getSubscriberButton.on("click", handleGetSubscriberInfoButtonClick);
