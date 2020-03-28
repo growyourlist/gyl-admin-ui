@@ -1,4 +1,4 @@
-import { fetchListsList, List, postList } from '../common/api'
+import { fetchListsList, postList } from '../common/api'
 import {
 	onDOMReady,
 	firstBySelector,
@@ -320,6 +320,9 @@ const validateNewId = async (id: string) => {
 	}
 	if (typeof id !== 'string') {
 		throw new Error('Invalid list id: not a string');
+	}
+	if (id.substring(0, 5) !== 'list-') {
+		throw new Error('Invalid list id, must start with: list-')
 	}
 	if (!/^[a-zA-Z0-9_-]*$/.test(id)) {
 		throw new Error('Invalid list id: contains invalid characters');

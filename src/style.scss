@@ -786,3 +786,8 @@ body {
     overflow: auto;
   }
 }
+
+#template-list {
+  max-height: 50vh;
+  overflow-y: auto;
+}

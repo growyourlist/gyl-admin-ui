@@ -2,6 +2,8 @@ import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
 import * as mermaid from 'mermaid';
 import { apiRequest } from '../common/apiRequest';
 import { confirmDelete } from '../common/confirmDelete';
+import { createTemplateListElm } from '../common/createTemplateListElm';
+import { loadTemplates } from '../common/loadTemplates';
 
 const getHumanTime = (milliseconds: number): string => {
 	let time = milliseconds;
@@ -79,56 +81,14 @@ onDOMReady(async () => {
 	};
 
 	const handleTemplateNameClick = (
-		event: Event,
+		templateName: string,
 		inputElm: HSHElement,
 		changeStepTemplateId: any
 	): boolean => {
 		event.preventDefault();
-		inputElm.value = new HSHElement(event.target as HTMLElement)
-			.parentUntil(elm => elm.isTag('li')).query('.template-name').text.trim();
+		inputElm.value = templateName;
 		changeStepTemplateId();
 		return false;
-	};
-
-	const createTemplateListElm = (
-		templateList: { Name: string }[],
-		inputElm: HSHElement,
-		changeStepTemplateId: any
-	): Elm => {
-		return new Elm(
-			{
-				type: 'ul',
-				attrs: { class: 'template-list' },
-			},
-			templateList.map(
-				template =>
-					new Elm(
-						{ type: 'li' },
-						[
-							new Elm({
-								type: 'span',
-								class: 'template-name',
-								text: template.Name,
-							}),
-							' ',
-							new Elm({
-								type: 'button',
-								class: 'button minor inline',
-								text: 'Use',
-								events: {
-									click: event =>
-										handleTemplateNameClick(
-											event,
-											inputElm,
-											changeStepTemplateId
-										),
-								},
-							})
-						]
-
-					)
-			)
-		);
 	};
 
 	const getStep = (stepName: string) => {
@@ -150,8 +110,11 @@ onDOMReady(async () => {
 				{ type: 'div' },
 				createTemplateListElm(
 					cachedTemplateList,
-					inputElm,
-					changeStepTemplateId
+					event => handleTemplateNameClick(
+						event,
+						inputElm,
+						changeStepTemplateId
+					)
 				)
 			)
 		);
@@ -1120,28 +1083,7 @@ onDOMReady(async () => {
 		});
 	};
 
-	const loadTemplates = async () => {
-		let nextToken = '';
-		let templates: any[] = [];
-		try {
-			do {
-				const response = await apiRequest(
-					`/admin/templates${nextToken &&
-						`?nextToken=${encodeURIComponent(nextToken)}`}`
-				);
-				const data = await response.json();
-				templates = templates.concat(data.templates);
-				nextToken = data.nextToken;
-				// Avoid hitting AWS SES template request limit
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-			} while (nextToken)
-			cachedTemplateList = templates;
-		}
-		catch (err) {
-			console.error(err)
-		}
-	}
-	loadTemplates();
+	loadTemplates(templates => cachedTemplateList = templates);
 
 	const loadAutoresponders = async () => {
 		try {

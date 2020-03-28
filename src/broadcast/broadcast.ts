@@ -5,6 +5,8 @@ import { InteractionsControl } from './interactionsControl';
 import { onDOMReady, byId, Elm } from '../common/hsh/hsh';
 import { SubscriberCountControl } from './subscriberCountControl';
 import { apiRequest } from '../common/apiRequest';
+import { loadTemplates } from '../common/loadTemplates';
+import { createTemplateListElm } from '../common/createTemplateListElm';
 
 const getInteractionString: (interaction: {
 	emailDate: string;
@@ -34,10 +36,17 @@ const getInteractionString: (interaction: {
 onDOMReady(async () => {
 	try {
 		// Set up the controls
+		let cachedTemplateList: { Name: string }[] = [];
+		let isLoadingTemplates = true;
+		loadTemplates(templates => {
+			isLoadingTemplates = false;
+			cachedTemplateList = templates;
+		});
 		const broadcastAudience = byId('broadcast-audience');
 		const broadcastEmailContainer = byId('broadcast-email-container');
 		const broadcastTimeContainer = byId('broadcast-time-container');
 		const templateIdElm = byId('template-name');
+		const templateListElm = byId('template-list');
 		const broadcastValidationMessage = byId('broadcast-validation-message');
 		const listsControl = new ListsControl('#lists-container');
 		listsControl.loadLists();
@@ -58,6 +67,34 @@ onDOMReady(async () => {
 			propertiesControl,
 			interactionsControl
 		);
+
+		templateIdElm.on('focus', () => {
+			if (templateListElm.isEmpty()) {
+				if (isLoadingTemplates) {
+					templateListElm.append(new Elm({
+						type: 'div',
+						class: 'status info m-t-1',
+						text: 'Still loading templates. Try again shortly...'
+					}))
+				}
+				else {
+					templateListElm.append(
+						createTemplateListElm(
+							cachedTemplateList,
+							templateId => { templateIdElm.value = templateId },
+						)
+					)
+				}
+			} else if ((templateListElm.text.indexOf('Still loading') >= 0) && !isLoadingTemplates) {
+				templateListElm.clear();
+				templateListElm.append(
+					createTemplateListElm(
+						cachedTemplateList,
+						event => console.log(event)
+					)
+				)
+			}
+		});
 
 		const hideInputControls = () => {
 			broadcastAudience.hide();
