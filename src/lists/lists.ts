@@ -1,4 +1,4 @@
-import { fetchListsList, postList } from '../common/api'
+import { fetchListsList, List, postList } from '../common/api'
 import {
 	onDOMReady,
 	firstBySelector,

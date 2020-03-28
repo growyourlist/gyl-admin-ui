@@ -42,9 +42,7 @@ export class ListsControl {
 				)
 			)
 		);
-		if (lists.length === 1) {
-			this.listElement.query('[name="target-list"]').checked = true;
-		}
+		this.listElement.query('[name="target-list"]').checked = true;
 	}
 
 	hide() {
