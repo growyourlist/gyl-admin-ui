@@ -27,19 +27,19 @@ export class SubscriberCountControl {
 	}
 
 	hide() {
-		this.container.hide()
+		this.container.hide();
 	}
 
 	show() {
-		this.container.show()
+		this.container.show();
 	}
 
 	private showError(err: Error) {
-		this.status.clear()
+		this.status.clear();
 		this.status.append(
 			new Elm({
 				type: 'span',
-				attrs: { 'class': 'color-error' },
+				attrs: { class: 'color-error' },
 				text: `Error: ${err.message}`,
 			})
 		);
@@ -58,7 +58,7 @@ export class SubscriberCountControl {
 					this.button.enable();
 					return;
 				}
-				await new Promise(resolve => setTimeout(resolve, 1000));
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 			} catch (err) {
 				this.showError(err);
 				hitError = true;
@@ -68,7 +68,9 @@ export class SubscriberCountControl {
 	}
 
 	async startSubscriberCount() {
-		const tags = this.tagsControl.getTags();
+		const list = this.listsControl.getList();
+		const tagsInput = this.tagsControl.getTags();
+		const tags = [list].concat(tagsInput);
 		const excludeTags = this.excludeTagsControl.getTags();
 		const properties = this.propertiesControl.getProperties();
 		const interactions = this.interactionsControl.getInteractions();
