@@ -1,9 +1,9 @@
-require('dotenv').config()
-const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+require('dotenv').config();
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const baseUrl = process.env.BASE_URL || 'http://localhost:8080'
+const baseUrl = process.env.BASE_URL || 'http://localhost:8080';
 
 module.exports = {
 	entry: './src/index.ts',
@@ -19,7 +19,7 @@ module.exports = {
 			template: './src/index.pug',
 			chunks: ['gylBase', 'index'],
 			templateParameters: {
-				baseUrl
+				baseUrl,
 			},
 		}),
 		new HtmlWebpackPlugin({
@@ -28,7 +28,7 @@ module.exports = {
 			template: './src/broadcast/broadcast.pug',
 			chunks: ['gylBase', 'broadcast'],
 			templateParameters: {
-				baseUrl
+				baseUrl,
 			},
 		}),
 		new HtmlWebpackPlugin({
@@ -37,7 +37,7 @@ module.exports = {
 			template: './src/emails/emails.pug',
 			chunks: ['gylBase', 'emails'],
 			templateParameters: {
-				baseUrl
+				baseUrl,
 			},
 		}),
 		new HtmlWebpackPlugin({
@@ -46,7 +46,7 @@ module.exports = {
 			template: './src/autoresponders/autoresponders.pug',
 			chunks: ['gylBase', 'autoresponders'],
 			templateParameters: {
-				baseUrl
+				baseUrl,
 			},
 		}),
 		new HtmlWebpackPlugin({
@@ -55,7 +55,7 @@ module.exports = {
 			template: './src/lists/lists.pug',
 			chunks: ['gylBase', 'lists'],
 			templateParameters: {
-				baseUrl
+				baseUrl,
 			},
 		}),
 		new HtmlWebpackPlugin({
@@ -64,7 +64,7 @@ module.exports = {
 			template: './src/analytics/analytics.pug',
 			chunks: ['gylBase', 'analytics'],
 			templateParameters: {
-				baseUrl
+				baseUrl,
 			},
 		}),
 		new HtmlWebpackPlugin({
@@ -73,7 +73,7 @@ module.exports = {
 			template: './src/export-data/export-data.pug',
 			chunks: ['gylBase', 'exportData'],
 			templateParameters: {
-				baseUrl
+				baseUrl,
 			},
 		}),
 		new HtmlWebpackPlugin({
@@ -82,9 +82,9 @@ module.exports = {
 			template: './src/tools/tools.pug',
 			chunks: ['gylBase', 'tools'],
 			templateParameters: {
-				baseUrl
+				baseUrl,
 			},
-		})
+		}),
 	],
 	module: {
 		rules: [
@@ -105,9 +105,11 @@ module.exports = {
 						loader: MiniCssExtractPlugin.loader,
 						options: {
 							publicPath: '../',
-						}
+						},
 					},
-					'css-loader', 'sass-loader'],
+					'css-loader',
+					'sass-loader',
+				],
 			},
 			{
 				test: /\.svg$/,
@@ -116,11 +118,11 @@ module.exports = {
 			{
 				test: /\.ttf$/,
 				use: 'file-loader',
-			}
+			},
 		],
 	},
 	resolve: {
-		extensions: ['.ts', '.pug', '.js', '.scss', '.css']
+		extensions: ['.ts', '.pug', '.js', '.scss', '.css'],
 	},
 	entry: {
 		gylBase: './src/common/gyl-base.ts',
@@ -134,10 +136,10 @@ module.exports = {
 		tools: './src/tools/tools.ts',
 	},
 	output: {
-		filename: '[name].js',
+		filename: `[name].js?v=${process.env.npm_package_version}`,
 		path: path.resolve(__dirname, 'dist'),
 	},
 	devServer: {
 		contentBase: path.join(__dirname, 'dist'),
-	}
-}
+	},
+};

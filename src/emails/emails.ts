@@ -7,7 +7,7 @@ import Snow from 'quill/themes/snow';
 import Bold from 'quill/formats/bold';
 import Underline from 'quill/formats/underline';
 import Italic from 'quill/formats/italic';
-import List, {ListItem} from 'quill/formats/list';
+import List, { ListItem } from 'quill/formats/list';
 import Link from 'quill/formats/link';
 import Header from 'quill/formats/header';
 import CodeBlock from 'quill/formats/code';
@@ -57,7 +57,9 @@ const createOrUpdateTemplate = async (templateData: {
 
 const getTemplateList = async (nextToken?: string) => {
 	const response = await apiRequest(
-		`/admin/templates${nextToken ? `?nextToken=${nextToken}` : ''}`
+		`/admin/templates${
+			nextToken ? `?nextToken=${encodeURIComponent(nextToken)}` : ''
+		}`
 	);
 	return await response.json();
 };
@@ -65,25 +67,24 @@ const getTemplateList = async (nextToken?: string) => {
 const getPostalAddress = async () => {
 	const response = await apiRequest('/admin/postal-address');
 	return await response.json();
-}
+};
 
 const getUnsubscribeLink = async () => {
 	const response = await apiRequest('/admin/unsubscribe-link');
 	return await response.json();
-}
+};
 
 /** When the dom is ready... */
 onDOMReady(async () => {
-
 	let postalAddress = '';
 	getPostalAddress()
-		.then(address => postalAddress = address || '')
-		.catch(err => console.error(err));
-	
+		.then((address) => (postalAddress = address || ''))
+		.catch((err) => console.error(err));
+
 	let unsubscribeLink = '';
 	getUnsubscribeLink()
-		.then(link => unsubscribeLink = link || '')
-		.catch(err => console.error(err));
+		.then((link) => (unsubscribeLink = link || ''))
+		.catch((err) => console.error(err));
 
 	// Set up editors
 	const quillEditor = new Quill('#template-editor', {
@@ -110,33 +111,36 @@ onDOMReady(async () => {
 			const text = quillEditor.getText();
 			const addressParts = postalAddress
 				.split(/[\n,]/)
-				.filter(part => !!part.trim());
+				.filter((part) => !!part.trim());
 			if (!addressParts.length) {
-				return
+				return;
 			}
 			let hasAddress = false;
 			if (addressParts.length === 1) {
 				hasAddress = text.indexOf(addressParts[0]) >= 0;
-			}
-			else {
-				hasAddress = (text.indexOf(addressParts[0]) >= 0) && (text.indexOf(addressParts[1]) >= 0);
+			} else {
+				hasAddress =
+					text.indexOf(addressParts[0]) >= 0 &&
+					text.indexOf(addressParts[1]) >= 0;
 			}
 			if (!hasAddress) {
 				contentAlertElm.clear();
 				contentAlertElm.classes.add('m-t-1');
-				contentAlertElm.append(new Elm(
-					{
-						type: 'div',
-						class: 'status warning',
-					},
-					[
-						'Warning: postal address was not detected. Please ensure you ' +
-							'complying with regulations which may require a postal address.'
-					]
-				))
+				contentAlertElm.append(
+					new Elm(
+						{
+							type: 'div',
+							class: 'status warning',
+						},
+						[
+							'Warning: postal address was not detected. Please ensure you ' +
+								'complying with regulations which may require a postal address.',
+						]
+					)
+				);
 			}
 		}
-	}
+	};
 
 	// Sync rendered email and HTML
 	let changeIsFromAce = false;
@@ -181,21 +185,30 @@ onDOMReady(async () => {
 	const generateTextButton = byId('generate-text-email-button');
 	generateTextButton.on('click', () => {
 		let text = '';
-		const contentsDelta = (quillEditor.getContents() || {ops: []}) as {ops: any[]};
+		const contentsDelta = (quillEditor.getContents() || { ops: [] }) as {
+			ops: any[];
+		};
 		const contents = contentsDelta.ops;
 		for (let i = 0; i < contents.length; i++) {
 			const item = contents[i];
 			if (typeof item === 'object') {
 				if (typeof item.insert === 'string') {
-					text += item.insert
+					text += item.insert;
 				}
 				if (typeof item.attributes === 'object') {
-					if (typeof item.attributes.link === 'string' && item.attributes.link) {
-						text += ` ${item.attributes.link}`
+					if (
+						typeof item.attributes.link === 'string' &&
+						item.attributes.link
+					) {
+						text += ` ${item.attributes.link}`;
 					}
 					if (item.attributes.list) {
-						const lastNewLineIndex = text.lastIndexOf('\n', text.lastIndexOf('\n')-1) + 1;
-						text = text.slice(0, lastNewLineIndex) + '- ' + text.slice(lastNewLineIndex);
+						const lastNewLineIndex =
+							text.lastIndexOf('\n', text.lastIndexOf('\n') - 1) + 1;
+						text =
+							text.slice(0, lastNewLineIndex) +
+							'- ' +
+							text.slice(lastNewLineIndex);
 					}
 				}
 			}
@@ -222,21 +235,13 @@ onDOMReady(async () => {
 		contentAlertElm.classes.remove('m-t-1');
 		const range = quillEditor.getSelection() as any;
 		if (range) {
-			quillEditor.insertText(
-				range.index + range.length,
-				'Unsubscribe',
-				{
-					link: unsubscribeLink
-				}
-			);
+			quillEditor.insertText(range.index + range.length, 'Unsubscribe', {
+				link: unsubscribeLink,
+			});
 		} else {
-			quillEditor.insertText(
-				quillEditor.getLength() - 1,
-				'Unsubscribe',
-				{
-					link: unsubscribeLink
-				}
-			);
+			quillEditor.insertText(quillEditor.getLength() - 1, 'Unsubscribe', {
+				link: unsubscribeLink,
+			});
 		}
 	});
 
@@ -264,8 +269,11 @@ onDOMReady(async () => {
 	// Load the email list on a separate thread
 	const emailList = byId('email-list');
 
-	const generateTemplateListItem = (templateData: { Name: string; CreatedTimestamp: string }) => {
-		return new Elm({ type: 'li', attrs: { 'class': 'm-b-0p3' } }, [
+	const generateTemplateListItem = (templateData: {
+		Name: string;
+		CreatedTimestamp: string;
+	}) => {
+		return new Elm({ type: 'li', attrs: { class: 'm-b-0p3' } }, [
 			new Elm('span', templateData.Name),
 			' ',
 			new Elm({
@@ -276,23 +284,21 @@ onDOMReady(async () => {
 			' ',
 			new Elm({
 				type: 'button',
-				attrs: { 'class': 'button minor inline' },
+				attrs: { class: 'button minor inline' },
 				text: 'Delete',
 				events: {
-					click: async event => {
+					click: async (event) => {
 						const name = templateData.Name;
 						const buttonElm = new HSHElement(event.target);
-						const liElm = buttonElm.parentUntil(elm => elm.isTag('li'));
+						const liElm = buttonElm.parentUntil((elm) => elm.isTag('li'));
 						try {
 							if (
-								await confirmDelete(
-									`Are you sure you want to delete ${name}?`
-								)
+								await confirmDelete(`Are you sure you want to delete ${name}?`)
 							) {
 								if (!liElm) {
 									throw new Error('Parent list item not found');
 								}
-								liElm.queryAll('button').forEach(btn => btn.disable());
+								liElm.queryAll('button').forEach((btn) => btn.disable());
 								liElm.setAttribute('style', 'color:grey');
 								await deleteTemplate(name);
 								liElm.removeSelf();
@@ -314,19 +320,19 @@ onDOMReady(async () => {
 			' ',
 			new Elm({
 				type: 'button',
-				attrs: { 'class': 'button minor inline' },
+				attrs: { class: 'button minor inline' },
 				text: 'Edit',
 				events: {
-					click: async event => {
-						contentAlertElm.classes.remove('m-t-1')
-						contentAlertElm.clear()
+					click: async (event) => {
+						contentAlertElm.classes.remove('m-t-1');
+						contentAlertElm.clear();
 						const name = templateData.Name;
 						const buttonElm = new HSHElement(event.target);
-						const liElm = buttonElm.parentUntil(elm => elm.isTag('li'));
+						const liElm = buttonElm.parentUntil((elm) => elm.isTag('li'));
 						try {
-							liElm.queryAll('button').forEach(button => {
-								button.disable()
-							})
+							liElm.queryAll('button').forEach((button) => {
+								button.disable();
+							});
 							await loadTemplateIntoEditor(name);
 						} catch (err) {
 							console.error(err);
@@ -339,15 +345,15 @@ onDOMReady(async () => {
 								}),
 							]);
 						} finally {
-							liElm.queryAll('button').forEach(button => {
-								button.enable()
-							})
+							liElm.queryAll('button').forEach((button) => {
+								button.enable();
+							});
 						}
 					},
 				},
 			}),
-		])
-	}
+		]);
+	};
 
 	const loadTemplateList = async () => {
 		try {
@@ -360,23 +366,21 @@ onDOMReady(async () => {
 					emailList.append(
 						templateListResponse.templates.map(
 							(t: { Name: string; CreatedTimestamp: string }) => {
-								return generateTemplateListItem(t)
+								return generateTemplateListItem(t);
 							}
 						)
-					)
+					);
 				}
 				nextToken = templateListResponse.nextToken;
 				if (nextToken) {
 					// Getting templates is limited to 1 request per second (by AWS)
-					await new Promise(resolve => setTimeout(resolve, 1000));
+					await new Promise((resolve) => setTimeout(resolve, 1000));
 				}
 			} while (nextToken);
 			if (!templateCount) {
-				emailList.append(
-					new Elm('li', new Elm('em', 'No emails found'))
-				)
+				emailList.append(new Elm('li', new Elm('em', 'No emails found')));
 			}
-			byId('email-list-loading-status').clear()
+			byId('email-list-loading-status').clear();
 		} catch (err) {
 			console.error(err);
 			emailList.clear();
@@ -388,23 +392,23 @@ onDOMReady(async () => {
 				})
 			);
 		}
-	}
-	loadTemplateList()
+	};
+	loadTemplateList();
 
 	const sendTestEmailButton = byId('send-test-email-button');
 	const testEmailStatus = byId('test-email-status');
 	sendTestEmailButton.on('click', async () => {
 		try {
-			testEmailStatus.clear()
-			testEmailStatus.classes.add('m-t-1')
-			testEmailStatus.append(new Elm(
-				{
+			testEmailStatus.clear();
+			testEmailStatus.classes.add('m-t-1');
+			testEmailStatus.append(
+				new Elm({
 					type: 'div',
 					class: 'status info',
-					text: 'Sending test email'
-				}
-			))
-			sendTestEmailButton.disable()
+					text: 'Sending test email',
+				})
+			);
+			sendTestEmailButton.disable();
 			await apiRequest('/admin/single-email-send', {
 				method: 'POST',
 				body: JSON.stringify({
@@ -413,73 +417,78 @@ onDOMReady(async () => {
 					body: {
 						text: templateTextElm.value,
 						html: quillEditor.root.innerHTML,
-					}
-				})
-			})
-			testEmailStatus.clear()
-			testEmailStatus.append(new Elm(
-				{
+					},
+				}),
+			});
+			testEmailStatus.clear();
+			testEmailStatus.append(
+				new Elm({
 					type: 'div',
 					class: 'status success',
 					text: `Test email sent`,
-				}
-			))
+				})
+			);
 		} catch (err) {
-			testEmailStatus.clear()
-			testEmailStatus.append(new Elm(
-				{
+			testEmailStatus.clear();
+			testEmailStatus.append(
+				new Elm({
 					type: 'div',
 					class: 'status error',
 					text: `Error sending test email: ${err.message}`,
-				}
-			))
+				})
+			);
 		} finally {
 			sendTestEmailButton.enable();
 		}
 	});
 
 	// Add a listener to the create/update template button
-	const createUpdateButton = byId('create-update-template-button')
-	const createUpdateStatus = byId('create-template-output')
+	const createUpdateButton = byId('create-update-template-button');
+	const createUpdateStatus = byId('create-template-output');
 	createUpdateButton.on('click', async () => {
-		createUpdateButton.disable()
-		createUpdateStatus.clear()
+		createUpdateButton.disable();
+		createUpdateStatus.clear();
 		try {
 			await createOrUpdateTemplate({
 				TemplateName: templateNameElm.value,
 				SubjectPart: templateSubjectElm.value,
 				HtmlPart: quillEditor.root.innerHTML,
 				TextPart: templateTextElm.value,
-			})
+			});
 			if (emailList.text.indexOf('No emails') >= 0) {
 				emailList.clear();
 			}
-			emailList.append(generateTemplateListItem({
-				CreatedTimestamp: new Date().toISOString(),
-				Name: templateNameElm.value,
-			}));
-			createUpdateStatus.append(new Elm({
-				type: 'p',
-				attrs: { 'class': 'status success' },
-				text: 'Email updated or created',
-			}))
+			emailList.append(
+				generateTemplateListItem({
+					CreatedTimestamp: new Date().toISOString(),
+					Name: templateNameElm.value,
+				})
+			);
+			createUpdateStatus.append(
+				new Elm({
+					type: 'p',
+					attrs: { class: 'status success' },
+					text: 'Email updated or created',
+				})
+			);
+		} catch (err) {
+			console.error(err);
+			createUpdateStatus.append(
+				new Elm({
+					type: 'p',
+					attrs: { class: 'status error' },
+					text: `Error creating or updating email: ${err.message}`,
+				})
+			);
+		} finally {
+			createUpdateButton.enable();
 		}
-		catch (err) {
-			console.error(err)
-			createUpdateStatus.append(new Elm({
-				type: 'p',
-				attrs: { 'class': 'status error' },
-				text: `Error creating or updating email: ${err.message}`,
-			}))
-		}
-		finally {
-			createUpdateButton.enable()
-		}
-	})
+	});
 
 	const urlTemplatePattern = /[?&]template=([a-zA-Z0-9-]+)/;
-	const templateNameMatch = window.location.search && window.location.search.match(urlTemplatePattern);
+	const templateNameMatch =
+		window.location.search && window.location.search.match(urlTemplatePattern);
 	if (templateNameMatch) {
-		loadTemplateIntoEditor(templateNameMatch[1])
+		loadTemplateIntoEditor(templateNameMatch[1]);
 	}
 });
