@@ -12,9 +12,12 @@ include ../part-header.pug
 			p.
 				Editing an email with a new name will create a new email. Editing
 				an email with an existing name will update the current email.
-			p
+			p.m-b-0p3
 				label Email name
 				input#template-name.w-100.input
+			div
+				button#load-template-button.button.button.secondary Load Template With This Name
+				#load-template-button-container
 			p
 				label Email subject
 				input#template-subject.w-100.input

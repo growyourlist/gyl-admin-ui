@@ -33,6 +33,7 @@ Quill.register({
 import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
 import { apiRequest } from '../common/apiRequest';
 import { confirmDelete } from '../common/confirmDelete';
+import './email.scss';
 
 const newLinePattern = /(<\/div>|<\/p>|<\/h[1-6]>|<\/[ou]l>|<[ou]l>|<\/li>|<br ?\/?>)(?!\n)/g;
 
@@ -482,6 +483,23 @@ onDOMReady(async () => {
 			);
 		} finally {
 			createUpdateButton.enable();
+		}
+	});
+
+	const loadTemplateButton = byId('load-template-button');
+	loadTemplateButton.on('click', async () => {
+		const loadTemplateButtonContainer = byId('load-template-button-container');
+		loadTemplateButtonContainer.clear();
+		try {
+			await loadTemplateIntoEditor(templateNameElm.value);
+		} catch (err) {
+			loadTemplateButtonContainer.append(
+				new Elm({
+					type: 'p',
+					attrs: { class: 'status error' },
+					text: `Error creating or updating email: ${err.message}`,
+				})
+			);
 		}
 	});
 
