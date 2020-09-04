@@ -5,41 +5,63 @@ import { confirmDelete } from '../common/confirmDelete';
 import { createTemplateListElm } from '../common/createTemplateListElm';
 import { loadTemplates } from '../common/loadTemplates';
 
-const getHumanTime = (milliseconds: number): string => {
-	let time = milliseconds;
-	let display = '';
-	const days = Math.floor(time / 86400000);
-	if (days) {
-		display += days + ' day' + (days !== 1 ? 's' : '') + ' ';
+const pluralize = (value: number, unit: string): string => {
+	if (Math.abs(value) === 1) {
+		return unit.substring(0, unit.length - 1);
 	}
-	time %= 86400000;
-	const hrs = Math.floor(time / 3600000);
-	if (hrs) {
-		display += hrs + ' hr' + (hrs !== 1 ? 's' : '') + ' ';
-	}
-	time %= 3600000;
-	const mins = Math.floor(time / 60000);
-	if (mins) {
-		display += mins + ' min' + (mins !== 1 ? 's' : '') + ' ';
-	}
-	time %= 60000;
-	const seconds = Math.floor(time / 1000);
-	if (seconds) {
-		display += seconds + ' s';
-	}
-	return display;
+	return unit;
 };
 
-const getMilliseconds = (humanTime: string): number => {
-	const daysMatch = humanTime.match(/(\d+) days?\b/);
-	const days = daysMatch ? parseInt(daysMatch[1]) : 0;
-	const hrsMatch = humanTime.match(/(\d+) hrs?\b/);
-	const hrs = hrsMatch ? parseInt(hrsMatch[1]) : 0;
-	const minsMatch = humanTime.match(/(\d+) mins?\b/);
-	const mins = minsMatch ? parseInt(minsMatch[1]) : 0;
-	const secondsMatch = humanTime.match(/(\d+) s\b/);
-	const seconds = secondsMatch ? parseInt(secondsMatch[1]) : 0;
-	return days * 86400000 + hrs * 3600000 + mins * 60000 + seconds * 1000;
+const getHumanTimeParts = (
+	milliseconds: number,
+	pluralizeUnit: boolean = false
+): { timeValue: string; timeUnit: string } => {
+	let time = milliseconds;
+	if (time % 86400000 === 0) {
+		const value = time / 86400000;
+		return {
+			timeValue: value.toString(),
+			timeUnit: pluralizeUnit ? pluralize(value, 'days') : 'days',
+		};
+	}
+	if (time % 3600000 === 0) {
+		const value = time / 3600000;
+		return {
+			timeValue: value.toString(),
+			timeUnit: pluralizeUnit ? pluralize(value, 'hours') : 'hours',
+		};
+	}
+	if (time % 60000 === 0) {
+		const value = time / 60000;
+		return {
+			timeValue: value.toString(),
+			timeUnit: pluralizeUnit ? pluralize(value, 'minutes') : 'minutes',
+		};
+	}
+	const value = time / 1000;
+	return {
+		timeValue: Math.round(value).toString(),
+		timeUnit: pluralizeUnit ? pluralize(value, 'seconds') : 'seconds',
+	};
+};
+
+const getMillisecondsNew = (timeValue: string, timeUnit: string): number => {
+	const time = parseInt(timeValue);
+	if (isNaN(time)) {
+		throw Error('Invalid time value');
+	}
+	switch (timeUnit) {
+		case 'days':
+			return time * 24 * 60 * 60 * 1000;
+		case 'hours':
+			return time * 60 * 60 * 1000;
+		case 'minutes':
+			return time * 60 * 1000;
+		case 'seconds':
+			return time * 1000;
+		default:
+			throw new Error('Invaid time unit');
+	}
 };
 
 const timeStrPattern = /^(\d+ days?\s?)?(\d+ hrs?\s?)?(\d+ mins?\s?)?(\d+ s)?$/;
@@ -108,13 +130,8 @@ onDOMReady(async () => {
 		inputElm.insertAfterThis(
 			new Elm(
 				{ type: 'div' },
-				createTemplateListElm(
-					cachedTemplateList,
-					event => handleTemplateNameClick(
-						event,
-						inputElm,
-						changeStepTemplateId
-					)
+				createTemplateListElm(cachedTemplateList, (event) =>
+					handleTemplateNameClick(event, inputElm, changeStepTemplateId)
 				)
 			)
 		);
@@ -132,7 +149,7 @@ onDOMReady(async () => {
 			class: 'button secondary',
 			text: 'Add subsequent step',
 			events: {
-				click: event => {
+				click: (event) => {
 					stepEditorElm.append([
 						new Elm({ type: 'div', class: 'm-b-0p3' }, [
 							new Elm({
@@ -146,7 +163,7 @@ onDOMReady(async () => {
 								class: 'input w-100',
 								id: 'new-step-name',
 								events: {
-									change: event => {
+									change: (event) => {
 										const existingStep = getStep(event.target.value);
 										const newStepTypeElm = byId('new-step-type');
 										if (existingStep) {
@@ -173,16 +190,34 @@ onDOMReady(async () => {
 												'make choice based on tag',
 												'unsubscribe',
 												'wait',
-											],
+										  ],
 							}),
 						]),
 						new Elm({ type: 'div', class: 'm-b-0p3' }, [
 							new Elm('div', new Elm('label', 'Run new next step in')),
-							new Elm({
-								type: 'input',
-								class: 'input w-100',
-								id: 'new-run-in',
-							}),
+							new Elm(
+								{
+									type: 'div',
+									class: 'flex',
+								},
+								[
+									new Elm({
+										type: 'input',
+										attrs: {
+											type: 'number',
+										},
+										class: 'input min-w-0',
+										id: 'new-run-in-value',
+										value: '1',
+									}),
+									new Elm({
+										type: 'select',
+										class: 'input min-w-0 w-66',
+										id: 'new-run-in-unit',
+										options: ['days', 'hours', 'minutes', 'seconds'],
+									}),
+								]
+							),
 						]),
 						new Elm({ type: 'div', class: 'm-b-0p3' }, [
 							new Elm('div', new Elm('label', 'Tag reason')),
@@ -225,7 +260,10 @@ onDOMReady(async () => {
 											steps: Object.assign({}, def.steps, {
 												[stepName]: Object.assign({}, def.steps[stepName], {
 													nextAction: newStepName,
-													runNextIn: getMilliseconds(byId('new-run-in').value),
+													runNextIn: getMillisecondsNew(
+														byId('new-run-in-value').value,
+														byId('new-run-in-unit').value
+													),
 												}),
 											}),
 										};
@@ -269,7 +307,7 @@ onDOMReady(async () => {
 						attrs: { placeholder: 'Name of tag to check' },
 						value: stepDef.tagToCheck || '',
 						events: {
-							keyup: event => {
+							keyup: (event) => {
 								const def = getDefinition();
 								const stepName = getCurrentStepName();
 								const steps = Object.assign({}, def.steps, {
@@ -321,7 +359,7 @@ onDOMReady(async () => {
 						class: 'input w-100',
 						id: 'new-step-name',
 						events: {
-							change: event => {
+							change: (event) => {
 								const existingStep = getStep(event.target.value);
 								const newStepTypeElm = byId('new-step-type');
 								if (existingStep) {
@@ -466,8 +504,11 @@ onDOMReady(async () => {
 		}
 		for (let connection of connections) {
 			if (connection.time === 0 || connection.time) {
-				const time = getHumanTime(connection.time);
-				graph += `${connection.from}-->|Wait ${time}|${connection.to}\n`;
+				const { timeUnit, timeValue } = getHumanTimeParts(
+					connection.time,
+					true
+				);
+				graph += `${connection.from}-->|Wait ${timeValue} ${timeUnit}|${connection.to}\n`;
 			} else if (connection.choiceResult) {
 				const result = connection.choiceResult;
 				graph += `${connection.from}-->|${result}|${connection.to}\n`;
@@ -682,7 +723,7 @@ onDOMReady(async () => {
 						value: stepDef.templateId || '',
 						attrs: { id: 'template-id', class: 'input w-100' },
 						events: {
-							focus: event =>
+							focus: (event) =>
 								showTemplates(
 									new HSHElement(event.target),
 									changeStepTemplateId
@@ -765,41 +806,70 @@ onDOMReady(async () => {
 			);
 		}
 		if (stepDef.runNextIn) {
+			const { timeValue, timeUnit } = getHumanTimeParts(stepDef.runNextIn);
+
+			const respondToDelayChange = () => {
+				const runNextInValueElm = byId('run-next-in-value');
+				try {
+					runNextInValueElm.style.border = '';
+					runNextInValueElm.style.padding = '';
+					const runNextInValue = runNextInValueElm.value;
+					const newStep = Object.assign({}, stepDef);
+					newStep.runNextIn = getMillisecondsNew(
+						runNextInValue,
+						byId('run-next-in-unit').value
+					);
+					updateDefinition({
+						steps: Object.assign({}, steps, {
+							[currentStepName]: newStep,
+						}),
+					});
+				} catch (err) {
+					console.error(err);
+					runNextInValueElm.style.border = '1px solid red';
+					runNextInValueElm.style.padding = '2px';
+				}
+			};
+
 			newStepEditorContent.push(
 				new Elm({ type: 'div', attrs: { class: 'm-b-0p3' } }, [
 					new Elm('div', new Elm('label', 'Run next step in')),
 					new Elm(
-						'div',
-						new Elm({
-							type: 'input',
-							value: getHumanTime(stepDef.runNextIn),
-							attrs: {
-								id: 'run-next-in',
-								class: 'input w-100',
-								type: 'text',
-								placeholder: 'e.g. 2 days 5 hrs 30 mins 5 s',
-							},
-							events: {
-								keyup: () => {
-									const runNextInElm = byId('run-next-in');
-									const runNextIn = runNextInElm.value;
-									if (!isValidTimeString(runNextIn)) {
-										runNextInElm.style.border = '1px solid red';
-										runNextInElm.style.padding = '2px';
-										return;
-									}
-									runNextInElm.style.border = '';
-									runNextInElm.style.padding = '';
-									const newStep = Object.assign({}, stepDef);
-									newStep.runNextIn = getMilliseconds(runNextIn);
-									updateDefinition({
-										steps: Object.assign({}, steps, {
-											[currentStepName]: newStep,
-										}),
-									});
+						{
+							type: 'div',
+							class: 'flex',
+						},
+						[
+							new Elm({
+								type: 'input',
+								value: timeValue,
+								attrs: {
+									id: 'run-next-in-value',
+									class: 'input min-w-0',
+									type: 'number',
 								},
-							},
-						})
+								events: {
+									keyup: () => {
+										respondToDelayChange();
+									},
+									change: () => {
+										respondToDelayChange();
+									},
+								},
+							}),
+							new Elm({
+								type: 'select',
+								class: 'input min-w-0 w-66',
+								id: 'run-next-in-unit',
+								value: timeUnit,
+								options: ['days', 'hours', 'minutes', 'seconds'],
+								events: {
+									change: () => {
+										respondToDelayChange();
+									},
+								},
+							}),
+						]
 					),
 				])
 			);
@@ -807,7 +877,7 @@ onDOMReady(async () => {
 			const nextStepControls: Elm[] = createNextStepControls(
 				() => currentStepName
 			);
-			nextStepControls.forEach(control => newStepEditorContent.push(control));
+			nextStepControls.forEach((control) => newStepEditorContent.push(control));
 		}
 		stepEditorElm.append(newStepEditorContent);
 	};
@@ -836,7 +906,7 @@ onDOMReady(async () => {
 
 	clearAutoresponderEditor();
 
-	autoresponderIdElm.on('keyup', event => {
+	autoresponderIdElm.on('keyup', (event) => {
 		const autoresponderId = (event.target as HTMLInputElement).value.replace(
 			/[^a-z0-9]/i,
 			''
@@ -856,15 +926,14 @@ onDOMReady(async () => {
 			autoresponder.steps.Start.tagReason = defaultTagReasonElm.value;
 			autoresponder.defaultTagReason = defaultTagReasonElm.value;
 			updateDefinition(autoresponder, true);
-			const tagReasonElm = byId('tag-reason')
+			const tagReasonElm = byId('tag-reason');
 			if (tagReasonElm) {
 				tagReasonElm.value = defaultTagReasonElm.value;
 			}
+		} else {
+			updateDefinition({ defaultTagReason });
 		}
-		else {
-			updateDefinition({ defaultTagReason })
-		}
-		const openNewStepTagReason = byId('new-tag-reason')
+		const openNewStepTagReason = byId('new-tag-reason');
 		if (openNewStepTagReason) {
 			openNewStepTagReason.value = defaultTagReasonElm.value;
 		}
@@ -883,24 +952,27 @@ onDOMReady(async () => {
 	};
 
 	const validateAutoresponder: () => boolean | string = () => {
-		const autoresponderData = JSON.parse(definitionElm.value)
+		const autoresponderData = JSON.parse(definitionElm.value);
 		if (!autoresponderData.autoresponderId) {
 			return 'Please enter an Autoresponder id';
 		}
 		const { steps } = autoresponderData;
-		const stepNames = Object.keys(steps)
+		const stepNames = Object.keys(steps);
 		for (let i = 0; i < stepNames.length; i++) {
 			const stepName = stepNames[i];
-			if (steps[stepName].type === 'send email' && !steps[stepName].templateId) {
-				return 'Please ensure all \'send email\' steps have email ids';
+			if (
+				steps[stepName].type === 'send email' &&
+				!steps[stepName].templateId
+			) {
+				return "Please ensure all 'send email' steps have email ids";
 			}
 		}
 		return true;
-	}
+	};
 
 	const postAutoresponderOutput = byId('post-autoresponder-output');
 	const postAutoresponder = async () => {
-		const autoresponderData = JSON.parse(definitionElm.value)
+		const autoresponderData = JSON.parse(definitionElm.value);
 		const response = await apiRequest('/admin/autoresponder', {
 			method: 'POST',
 			body: JSON.stringify(setEmptyStrToNull(autoresponderData)),
@@ -913,12 +985,14 @@ onDOMReady(async () => {
 		postAutoresponderOutput.clear();
 		const errorMessage = validateAutoresponder();
 		if (typeof errorMessage === 'string') {
-			postAutoresponderOutput.append(new Elm({
-				type: 'div',
-				class: 'status m-b-1 error',
-				text: errorMessage
-			}))
-			return 
+			postAutoresponderOutput.append(
+				new Elm({
+					type: 'div',
+					class: 'status m-b-1 error',
+					text: errorMessage,
+				})
+			);
+			return;
 		}
 		postAutoresponderButton.disable();
 		postAutoresponderOutput.append(
@@ -941,7 +1015,9 @@ onDOMReady(async () => {
 			if (autoresponderListElm.text.indexOf('No autoresponders') >= 0) {
 				autoresponderListElm.clear();
 			}
-			appendAutoresponderListItem({autoresponderId: autoresponderIdElm.value.trim()})
+			appendAutoresponderListItem({
+				autoresponderId: autoresponderIdElm.value.trim(),
+			});
 		} catch (err) {
 			console.error(err);
 			postAutoresponderOutput.clear();
@@ -1010,7 +1086,7 @@ onDOMReady(async () => {
 										liElement.query('.status').removeSelf();
 									}
 									liElement.style.color = 'grey';
-									liElement.queryAll('button').forEach(btn => btn.hide());
+									liElement.queryAll('button').forEach((btn) => btn.hide());
 									try {
 										await apiRequest('/admin/autoresponder', {
 											method: 'DELETE',
@@ -1028,7 +1104,7 @@ onDOMReady(async () => {
 										);
 									} finally {
 										liElement.style.color = '';
-										liElement.queryAll('button').forEach(btn => btn.show());
+										liElement.queryAll('button').forEach((btn) => btn.show());
 									}
 								}
 							},
@@ -1047,7 +1123,7 @@ onDOMReady(async () => {
 								if (liElement.query('.status')) {
 									liElement.query('.status').removeSelf();
 								}
-								liElement.queryAll('button').forEach(btn => btn.hide());
+								liElement.queryAll('button').forEach((btn) => btn.hide());
 								try {
 									await loadAutoresponder(autoresponder.autoresponderId);
 								} catch (err) {
@@ -1060,7 +1136,7 @@ onDOMReady(async () => {
 										})
 									);
 								} finally {
-									liElement.queryAll('button').forEach(btn => btn.show());
+									liElement.queryAll('button').forEach((btn) => btn.show());
 								}
 							},
 						},
@@ -1068,7 +1144,7 @@ onDOMReady(async () => {
 				]
 			)
 		);
-	}
+	};
 
 	const renderAutoresponderList = (list: any[]) => {
 		autoresponderListElm.clear();
@@ -1078,12 +1154,12 @@ onDOMReady(async () => {
 			);
 			return;
 		}
-		list.forEach(autoresponder => {
+		list.forEach((autoresponder) => {
 			appendAutoresponderListItem(autoresponder);
 		});
 	};
 
-	loadTemplates(templates => cachedTemplateList = templates);
+	loadTemplates((templates) => (cachedTemplateList = templates));
 
 	const loadAutoresponders = async () => {
 		try {
@@ -1097,8 +1173,9 @@ onDOMReady(async () => {
 				})
 			);
 			const response = await apiRequest(
-				`/admin/autoresponders${nextToken &&
-					`?nextToken=${encodeURIComponent(nextToken)}`}`
+				`/admin/autoresponders${
+					nextToken && `?nextToken=${encodeURIComponent(nextToken)}`
+				}`
 			);
 			const autoresponders = await response.json();
 			renderAutoresponderList(autoresponders);

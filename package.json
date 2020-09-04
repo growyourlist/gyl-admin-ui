@@ -6,7 +6,7 @@
 	"author": "https://github.com/growyourlist",
 	"license": "MIT",
 	"scripts": {
-		"build": "webpack --mode=production",
+		"build": "set NODE_ENV=production&& webpack --mode=production",
 		"start:dev": "webpack-dev-server --mode=development"
 	},
 	"devDependencies": {

@@ -3,7 +3,10 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const baseUrl = process.env.BASE_URL || 'http://localhost:8080';
+const baseUrl =
+	process.env.NODE_ENV === 'production'
+		? process.env.BASE_URL
+		: process.env.BASE_URL_DEV;
 
 module.exports = {
 	entry: './src/index.ts',
