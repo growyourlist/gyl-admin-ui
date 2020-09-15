@@ -65,7 +65,7 @@ module.exports = {
 			filename: 'analytics/index.html',
 			inject: 'body',
 			template: './src/analytics/analytics.pug',
-			chunks: ['gylBase', 'analytics'],
+			chunks: ['gylBase', 'viewer'],
 			templateParameters: {
 				baseUrl,
 			},
@@ -134,7 +134,7 @@ module.exports = {
 		emails: './src/emails/emails.ts',
 		autoresponders: './src/autoresponders/autoresponders.ts',
 		lists: './src/lists/lists.ts',
-		analytics: './src/analytics/analytics.ts',
+		viewer: './src/analytics/viewer.ts',
 		exportData: './src/export-data/export-data.ts',
 		tools: './src/tools/tools.ts',
 	},
