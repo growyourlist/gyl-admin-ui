@@ -42,7 +42,7 @@ export const bySelector = (selector: string): HSHElement[] => {
 		return [];
 	}
 	const hshElements: HSHElement[] = [];
-	elements.forEach(element => {
+	elements.forEach((element) => {
 		if (!(element instanceof HTMLElement)) {
 			throw new Error(
 				`HSHElement only works with HTMLElements. Attempted to ` +
@@ -106,14 +106,14 @@ export class HSHElement {
 	}
 
 	get data(): DOMStringMap {
-		return this._element.dataset
+		return this._element.dataset;
 	}
 
 	get valueAsNumber(): number | null {
 		if (this._element instanceof HTMLInputElement) {
-			return (<HTMLInputElement>this._element).valueAsNumber
+			return (<HTMLInputElement>this._element).valueAsNumber;
 		}
-		return null
+		return null;
 	}
 
 	set value(value: string) {
@@ -127,6 +127,10 @@ export class HSHElement {
 
 	get element(): HTMLElement {
 		return this._element;
+	}
+
+	get childNodes(): NodeListOf<ChildNode> {
+		return this._element.childNodes;
 	}
 
 	get style(): CSSStyleDeclaration {
@@ -161,7 +165,9 @@ export class HSHElement {
 	}
 
 	isTag(type: string): boolean {
-		return this._element.tagName.toLocaleLowerCase() === type.toLocaleLowerCase()
+		return (
+			this._element.tagName.toLocaleLowerCase() === type.toLocaleLowerCase()
+		);
 	}
 
 	parentUntil(test: (elm: HSHElement) => boolean): HSHElement | null {
@@ -196,6 +202,10 @@ export class HSHElement {
 
 	disable(): void {
 		this._element.setAttribute('disabled', '');
+	}
+
+	removeChild(element: ChildNode): void {
+		this._element.removeChild(element);
 	}
 
 	delete(): void {
@@ -243,19 +253,21 @@ export class HSHElement {
 		}
 	}
 
-	insertAfterThis(
-		newElement: HTMLElement | Elm,
-	): HSHElement {
+	insertAfterThis(newElement: HTMLElement | Elm): HSHElement {
 		const existingElement = this._element;
 		if (existingElement instanceof HTMLElement) {
 			if (newElement instanceof HTMLElement) {
 				return new HSHElement(
-					this._element.insertAdjacentElement('afterend', newElement) as HTMLElement
+					this._element.insertAdjacentElement(
+						'afterend',
+						newElement
+					) as HTMLElement
 				);
 			}
 			if (newElement instanceof Elm) {
 				return new HSHElement(
-					this._element.insertAdjacentElement('afterend',
+					this._element.insertAdjacentElement(
+						'afterend',
 						newElement.toHTMLElement()
 					) as HTMLElement
 				);
@@ -266,7 +278,7 @@ export class HSHElement {
 	prepend(element: HTMLElement | Elm | Array<HTMLElement | Elm>): HSHElement {
 		if (Array.isArray(element)) {
 			let last = null;
-			element.reverse().forEach(item => (last = this.prepend(item)));
+			element.reverse().forEach((item) => (last = this.prepend(item)));
 			return last;
 		}
 		if (element instanceof HTMLElement) {
@@ -285,13 +297,13 @@ export class HSHElement {
 	}
 
 	isDisabled(): boolean {
-		return this._element.getAttribute('disabled') !== null
+		return this._element.getAttribute('disabled') !== null;
 	}
 
 	append(element: HTMLElement | Elm | Array<HTMLElement | Elm>): HSHElement {
 		if (Array.isArray(element)) {
 			let last = null;
-			element.forEach(item => (last = this.append(item)));
+			element.forEach((item) => (last = this.append(item)));
 			return last;
 		}
 		if (element instanceof HTMLElement) {
@@ -300,6 +312,10 @@ export class HSHElement {
 		if (element instanceof Elm) {
 			return new HSHElement(this._element.appendChild(element.toHTMLElement()));
 		}
+	}
+
+	appendText(text: string) {
+		this._element.append(document.createTextNode(text));
 	}
 
 	removeSelf() {
@@ -332,7 +348,7 @@ export class HSHElement {
 	queryAll<K extends keyof HTMLElementTagNameMap>(selectors: K): HSHElement[] {
 		const results = this._element.querySelectorAll(selectors);
 		const result: HSHElement[] = [];
-		results.forEach(i => result.push(new HSHElement(i)));
+		results.forEach((i) => result.push(new HSHElement(i)));
 		return result;
 	}
 
@@ -343,7 +359,7 @@ export class HSHElement {
 		options?: boolean | AddEventListenerOptions
 	): void {
 		if (Array.isArray(type)) {
-			type.forEach(t => this._element.addEventListener(t, listener, options));
+			type.forEach((t) => this._element.addEventListener(t, listener, options));
 		} else {
 			this._element.addEventListener(type, listener, options);
 		}
@@ -365,9 +381,11 @@ export class HSHElement {
 		options?: boolean | AddEventListenerOptions
 	) {
 		if (Array.isArray(type)) {
-			type.forEach(t => this._element.removeEventListener(t, listener, options));
+			type.forEach((t) =>
+				this._element.removeEventListener(t, listener, options)
+			);
 		} else {
-			this._element.removeEventListener(type, listener, options)
+			this._element.removeEventListener(type, listener, options);
 		}
 	}
 }

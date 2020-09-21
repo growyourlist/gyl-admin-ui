@@ -100,10 +100,24 @@ include ../part-header.pug
 				button#count-subscribers-button.button.secondary Count Subscribers
 		#broadcast-email-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 Which email should be sent?
-			p This must be an email template you have already created.
-			div
-				input#template-name.input.w-100(placeholder="e.g. EmailName")
-			#template-list
+			p.
+				This must be an email you have already created. If you use more than one email - that is,
+				variations of an email - then emails will be sent to a given percentage of the list
+				(defaults to half the list), split roughly evenly among the email variations. After a given
+				period of time (defaults to 4 hours), the template with the most clicks will be selected as
+				the winner and the remainder of the list will receive this template.
+			#template-selection
+				div.m-b-0p5
+					span Selected email/s:
+					span#template-selection-list.m-l-0p3
+						em No email selected
+				div
+					label(for="template-name") Add email
+				div
+					input#template-name.input.w-100(placeholder="e.g. EmailName")
+				div.m-t-0p5
+					button#select-template-button.button.secondary Use email
+				#template-list
 		#broadcast-time-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 When do you want the broadcast to start sending?
 			p.

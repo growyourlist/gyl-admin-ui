@@ -2,7 +2,7 @@ import { ListsControl } from './listsControl';
 import { TagsControl } from './tagsControl';
 import { PropertiesControl } from './propertiesControl';
 import { InteractionsControl } from './interactionsControl';
-import { onDOMReady, byId, Elm } from '../common/hsh/hsh';
+import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
 import { SubscriberCountControl } from './subscriberCountControl';
 import { apiRequest } from '../common/apiRequest';
 import { loadTemplates } from '../common/loadTemplates';
@@ -14,7 +14,7 @@ const getInteractionString: (interaction: {
 	click?: boolean;
 	open?: boolean;
 	received?: boolean;
-}) => string = interaction => {
+}) => string = (interaction) => {
 	if (typeof interaction.received !== 'undefined') {
 		return `${interaction.received ? 'received' : 'did not receive'} ${
 			interaction.templateId
@@ -38,7 +38,7 @@ onDOMReady(async () => {
 		// Set up the controls
 		let cachedTemplateList: { Name: string }[] = [];
 		let isLoadingTemplates = true;
-		loadTemplates(templates => {
+		loadTemplates((templates) => {
 			isLoadingTemplates = false;
 			cachedTemplateList = templates;
 		});
@@ -48,6 +48,8 @@ onDOMReady(async () => {
 		const templateIdElm = byId('template-name');
 		const templateListElm = byId('template-list');
 		const broadcastValidationMessage = byId('broadcast-validation-message');
+		const useTemplateButton = byId('select-template-button');
+		const templateSelectionList = byId('template-selection-list');
 		const listsControl = new ListsControl('#lists-container');
 		listsControl.loadLists();
 		const tagsControl = new TagsControl('#tags-container');
@@ -68,31 +70,117 @@ onDOMReady(async () => {
 			interactionsControl
 		);
 
+		const addTemplateToTemplateSelectionList = (templateName: string) => {
+			const isFirst = templateSelectionList.text.trim() === 'No email selected';
+			if (isFirst) {
+				templateSelectionList.clear();
+			}
+			const elements: Array<string | Elm> = [];
+			const existingTemplatesPercentageSpans: Array<HSHElement> = templateSelectionList.queryAll(
+				'.test-send-percentage'
+			);
+			const templateCount = existingTemplatesPercentageSpans.length + 1;
+			const equalTestPercent = Math.round(1000 / (templateCount || 1)) / 10;
+			if (!isFirst) {
+				elements.push(', ');
+			}
+			elements.push(
+				new Elm({
+					type: 'span',
+					class: 'selected-template-name',
+					text: templateName,
+				})
+			);
+			elements.push(' (');
+			elements.push(
+				new Elm({
+					type: 'span',
+					class: 'test-send-percentage',
+					text: equalTestPercent.toString(),
+				})
+			);
+			elements.push('%) ');
+			elements.push(
+				new Elm({
+					type: 'button',
+					class: 'button minor inline',
+					text: 'Remove',
+					events: {
+						click: (event) => {
+							const elm = new HSHElement(event.target);
+							const wrapper = elm.parentUntil((p) =>
+								p.classes.contains('selected-template-name-container')
+							);
+							const percentageSpans: Array<HSHElement> = templateSelectionList.queryAll(
+								'.test-send-percentage'
+							);
+							wrapper.removeSelf();
+							const firstTemplate = templateSelectionList.query(
+								'.selected-template-name-container'
+							);
+							if (firstTemplate) {
+								if (firstTemplate.text.startsWith(',')) {
+									firstTemplate.removeChild(firstTemplate.childNodes[0]);
+								}
+							} else {
+								templateSelectionList.append(
+									new Elm('em', 'No email selected')
+								);
+							}
+						},
+					},
+				})
+			);
+			templateSelectionList.append(
+				new Elm(
+					{
+						type: 'span',
+						class: 'selected-template-name-container',
+					},
+					elements
+				)
+			);
+			existingTemplatesPercentageSpans.forEach(
+				(span) => (span.text = equalTestPercent.toString())
+			);
+		};
+
+		useTemplateButton.on('click', () => {
+			const emailName = templateIdElm.value.trim();
+			if (!emailName) {
+				return;
+			}
+			templateIdElm.value = '';
+			addTemplateToTemplateSelectionList(emailName);
+		});
+
 		templateIdElm.on('focus', () => {
 			if (templateListElm.isEmpty()) {
 				if (isLoadingTemplates) {
-					templateListElm.append(new Elm({
-						type: 'div',
-						class: 'status info m-t-1',
-						text: 'Still loading templates. Try again shortly...'
-					}))
-				}
-				else {
 					templateListElm.append(
-						createTemplateListElm(
-							cachedTemplateList,
-							templateId => { templateIdElm.value = templateId },
-						)
-					)
+						new Elm({
+							type: 'div',
+							class: 'status info m-t-1',
+							text: 'Still loading templates. Try again shortly...',
+						})
+					);
+				} else {
+					templateListElm.append(
+						createTemplateListElm(cachedTemplateList, (templateId) => {
+							addTemplateToTemplateSelectionList(templateId);
+						})
+					);
 				}
-			} else if ((templateListElm.text.indexOf('Still loading') >= 0) && !isLoadingTemplates) {
+			} else if (
+				templateListElm.text.indexOf('Still loading') >= 0 &&
+				!isLoadingTemplates
+			) {
 				templateListElm.clear();
 				templateListElm.append(
-					createTemplateListElm(
-						cachedTemplateList,
-						event => console.log(event)
-					)
-				)
+					createTemplateListElm(cachedTemplateList, (templateId) => {
+						addTemplateToTemplateSelectionList(templateId);
+					})
+				);
 			}
 		});
 
@@ -131,7 +219,7 @@ onDOMReady(async () => {
 		startDateElm.on(['keyup', 'change'], updateUTCTime);
 		startTimeElm.on(['keyup', 'change'], updateUTCTime);
 		if (startTimeElm.valueAsNumber || startDateElm.valueAsNumber) {
-			updateUTCTime()
+			updateUTCTime();
 		}
 		const getSendTimeValue = (): number => {
 			const runAtString = utcTimeElm.text.trim();
@@ -194,19 +282,23 @@ onDOMReady(async () => {
 
 			broadcastValidationMessage.clear();
 			if (!broadcastData.templateId) {
-				broadcastValidationMessage.append(new Elm({
-					type: 'p',
-					class: 'status error',
-					text: 'Please enter an email name.',
-				}))
+				broadcastValidationMessage.append(
+					new Elm({
+						type: 'p',
+						class: 'status error',
+						text: 'Please enter an email name.',
+					})
+				);
 				return;
 			}
 			if (!broadcastData.list) {
-				broadcastValidationMessage.append(new Elm({
-					type: 'p',
-					class: 'status error',
-					text: 'Please select a list to send to.',
-				}))
+				broadcastValidationMessage.append(
+					new Elm({
+						type: 'p',
+						class: 'status error',
+						text: 'Please select a list to send to.',
+					})
+				);
 				return;
 			}
 
@@ -285,7 +377,7 @@ onDOMReady(async () => {
 						)
 					);
 					confirmationMessage.push(new Elm('br'));
-					broadcastData.interactions.forEach(interaction => {
+					broadcastData.interactions.forEach((interaction) => {
 						confirmationMessage.push(
 							new Elm('span', `    ${getInteractionString(interaction)}`)
 						);
@@ -311,35 +403,38 @@ onDOMReady(async () => {
 
 			const confirmAndSend = async () => {
 				try {
-					confirmAndSendButton.disable()
-					cancelSendButton.disable()
+					confirmAndSendButton.disable();
+					cancelSendButton.disable();
 					await apiRequest('/admin/broadcast', {
 						method: 'POST',
 						body: JSON.stringify(broadcastData),
 					});
 					confirmAndSendButton.removeEventListener('click', confirmAndSend);
-					confirmAndSendButton.hide()
-					cancelSendButton.hide()
-					sendStatusMessage.clear()
-					sendStatusMessage.show()
-					sendStatusMessage.append(new Elm({
-						type: 'p',
-						attrs: { 'class': 'status success' },
-						text: 'Broadcast triggered',
-					}))
+					confirmAndSendButton.hide();
+					cancelSendButton.hide();
+					sendStatusMessage.clear();
+					sendStatusMessage.show();
+					sendStatusMessage.append(
+						new Elm({
+							type: 'p',
+							attrs: { class: 'status success' },
+							text: 'Broadcast triggered',
+						})
+					);
 				} catch (err) {
 					console.error(err);
-					sendStatusMessage.clear()
-					sendStatusMessage.show()
-					sendStatusMessage.append(new Elm({
-						type: 'p',
-						attrs: { 'class': 'status error' },
-						text: `Error sending broadcast: ${err.message}`,
-					}))
-				}
-				finally {
-					confirmAndSendButton.enable()
-					cancelSendButton.enable()
+					sendStatusMessage.clear();
+					sendStatusMessage.show();
+					sendStatusMessage.append(
+						new Elm({
+							type: 'p',
+							attrs: { class: 'status error' },
+							text: `Error sending broadcast: ${err.message}`,
+						})
+					);
+				} finally {
+					confirmAndSendButton.enable();
+					cancelSendButton.enable();
 				}
 			};
 
