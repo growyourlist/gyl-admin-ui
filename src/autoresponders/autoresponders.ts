@@ -107,7 +107,6 @@ onDOMReady(async () => {
 		inputElm: HSHElement,
 		changeStepTemplateId: any
 	): boolean => {
-		event.preventDefault();
 		inputElm.value = templateName;
 		changeStepTemplateId();
 		return false;
@@ -130,8 +129,8 @@ onDOMReady(async () => {
 		inputElm.insertAfterThis(
 			new Elm(
 				{ type: 'div' },
-				createTemplateListElm(cachedTemplateList, (event) =>
-					handleTemplateNameClick(event, inputElm, changeStepTemplateId)
+				createTemplateListElm(cachedTemplateList, (templateName) =>
+					handleTemplateNameClick(templateName, inputElm, changeStepTemplateId)
 				)
 			)
 		);
@@ -1041,6 +1040,78 @@ onDOMReady(async () => {
 			)
 		) {
 			clearAutoresponderEditor();
+		}
+	});
+
+	const autoConfirmTagsInput = byId('auto-confirm-tags-input');
+	const autoConfirmTagsStatusContainer = byId(
+		'auto-confirm-tags-status-container'
+	);
+	const autoConfirmTagsSaveButton = byId('auto-confirm-tags-save-button');
+	const loadAutoConfirmTags = async () => {
+		try {
+			const res = await apiRequest('/admin/auto-confirm-tags');
+			console.log(res);
+			if (!res.ok) {
+				throw new Error(`${res.status} ${res.statusText}`);
+			}
+			autoConfirmTagsInput.value = (await res.json()).autoConfirmTags || '';
+			autoConfirmTagsStatusContainer.clear();
+			autoConfirmTagsInput.enable();
+		} catch (err) {
+			autoConfirmTagsStatusContainer.clear();
+			autoConfirmTagsStatusContainer.append(
+				new Elm({
+					type: 'div',
+					class: 'status error',
+					text: err.message,
+				})
+			);
+		} finally {
+			autoConfirmTagsSaveButton.enable();
+		}
+	};
+	loadAutoConfirmTags();
+	autoConfirmTagsSaveButton.on('click', async () => {
+		try {
+			autoConfirmTagsInput.disable();
+			autoConfirmTagsSaveButton.disable();
+			autoConfirmTagsStatusContainer.clear();
+			autoConfirmTagsStatusContainer.append(
+				new Elm({
+					type: 'div',
+					class: 'status info',
+					text: 'Loading...',
+				})
+			);
+			const response = await apiRequest('/admin/auto-confirm-tags', {
+				method: 'POST',
+				body: JSON.stringify({ autoConfirmTags: autoConfirmTagsInput.value }),
+			});
+			if (response.ok) {
+				autoConfirmTagsStatusContainer.clear();
+				autoConfirmTagsStatusContainer.append(
+					new Elm({
+						type: 'div',
+						class: 'status success',
+						text: 'Auto confirm tags updated',
+					})
+				);
+			} else {
+				throw new Error(`${response.status} ${response.statusText}`);
+			}
+		} catch (err) {
+			autoConfirmTagsStatusContainer.clear();
+			autoConfirmTagsStatusContainer.append(
+				new Elm({
+					type: 'div',
+					class: 'status error',
+					text: err.message,
+				})
+			);
+		} finally {
+			autoConfirmTagsInput.enable();
+			autoConfirmTagsSaveButton.enable();
 		}
 	});
 

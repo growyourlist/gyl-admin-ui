@@ -39,4 +39,18 @@ include ../part-header.pug
 				button#post-autoresponder-button.button.main Create/update autoresponder
 				<span> </span>
 				button#clear-autoresponder-editor-button.button.secondary(style='display:none') Clear editor
+		#settings-editor-container.box.p-l-1.p-r-1.p-b-1.m-b-1
+			h3 Advanced settings
+			h4 Auto-confirm tags
+			p.
+				If subscriber clicks a link in an email and is assigned a tag and that
+				tag is in this comma-separated list, then the subscriber will
+				automatically be confirmed.
+			#auto-confirm-tags-status-container
+				.status.info Loading...
+			.m-t-0p5
+				label Auto-confirm tags (comma-separated list)
+				input#auto-confirm-tags-input.w-100.input(placeholder='tagA,tagB,tagC' disabled="true")
+			.m-t-1
+				button#auto-confirm-tags-save-button.button.secondary(disabled="true") Save auto-confirm tags
 include ../part-footer.pug
