@@ -257,7 +257,10 @@ onDOMReady(async () => {
 
 		sendButton.on('click', () => {
 			const broadcastData: {
-				templateId: string;
+				templates: Array<{
+					name: string;
+					testPercent: number;
+				}>;
 				runAt: number | null;
 				list: string;
 				tags: string[];
@@ -271,7 +274,15 @@ onDOMReady(async () => {
 					received?: boolean;
 				}[];
 			} = {
-				templateId: templateIdElm.value,
+				templates: templateSelectionList
+					.queryAll('.selected-template-name-container')
+					.map((elm) => {
+						return {
+							name: elm.query('.selected-template-name')?.text,
+							testPercent: parseFloat(elm.query('.test-send-percentage')?.text),
+						};
+					})
+					.filter((template) => !!template.name),
 				runAt: getSendTimeValue(),
 				list: listsControl.getList(),
 				tags: tagsControl.getTags(),
@@ -281,12 +292,12 @@ onDOMReady(async () => {
 			};
 
 			broadcastValidationMessage.clear();
-			if (!broadcastData.templateId) {
+			if (!broadcastData.templates.length) {
 				broadcastValidationMessage.append(
 					new Elm({
 						type: 'p',
 						class: 'status error',
-						text: 'Please enter an email name.',
+						text: 'Please select an email to send.',
 					})
 				);
 				return;
@@ -304,8 +315,16 @@ onDOMReady(async () => {
 
 			sendButton.hide();
 			hideInputControls();
+
 			const confirmationMessage: Elm[] = [
-				new Elm('span', `Send email: ${templateIdElm.value}`),
+				new Elm(
+					'span',
+					`Send ${
+						broadcastData.templates.length === 1 ? 'email' : 'email variations'
+					}: ${broadcastData.templates
+						.map((template) => `${template.name} (${template.testPercent}%)`)
+						.join(', ')}`
+				),
 				new Elm('br'),
 				new Elm('span', `At time: ${getSendTimeString(broadcastData.runAt)}`),
 				new Elm('br'),
