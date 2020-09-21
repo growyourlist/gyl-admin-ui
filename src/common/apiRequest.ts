@@ -1,9 +1,12 @@
-import { showSiteError } from "./showSiteError"
-import { Elm } from "./hsh/hsh"
+import { showSiteError } from './showSiteError';
+import { Elm } from './hsh/hsh';
 
-export async function apiRequest(input: RequestInfo, init?: RequestInit): Promise<Response> {
-	const apiUrl = localStorage.getItem('gyl-api-url')
-	const apiKey = sessionStorage.getItem('gyl-api-key')
+export async function apiRequest(
+	input: RequestInfo,
+	init?: RequestInit
+): Promise<Response> {
+	const apiUrl = localStorage.getItem('gyl-api-url');
+	const apiKey = sessionStorage.getItem('gyl-api-key');
 	if (!apiKey || !apiUrl) {
 		showSiteError(
 			new Elm('p', [
@@ -12,58 +15,66 @@ export async function apiRequest(input: RequestInfo, init?: RequestInit): Promis
 					{
 						type: 'a',
 						attrs: {
-							'href': '/'
+							href: '/',
 						},
 					},
-					'Set API connection details',
+					'Set API connection details'
 				),
-				new Elm('span', '.')
-			]
-		))
-		throw new Error('API Key not set')
+				new Elm('span', '.'),
+			])
+		);
+		throw new Error('API Key not set');
 	}
 
-	let request: Request = null
+	let request: Request = null;
 	const apiKeyHeader = {
-		'X-Gyl-Auth-Key': apiKey
-	}
+		'X-Gyl-Auth-Key': apiKey,
+	};
 	if (input instanceof Request) {
 		request = Object.assign({}, input, {
 			url: `${apiUrl}${input.url}`,
-			headers: Object.assign({}, (input.headers || {}), apiKeyHeader),
-			mode: 'cors'
-		})
-	}
-	else {
-		const requestInit = Object.assign({}, (init || {}), {
-			headers: Object.assign({}, ((init && init.headers) || {}), apiKeyHeader),
-			mode: 'cors'
-		})
-		request = new Request(`${apiUrl}${input}`, requestInit)
+			headers: Object.assign({}, input.headers || {}, apiKeyHeader),
+			mode: 'cors',
+		});
+	} else {
+		const requestInit = Object.assign({}, init || {}, {
+			headers: Object.assign({}, (init && init.headers) || {}, apiKeyHeader),
+			mode: 'cors',
+		});
+		request = new Request(`${apiUrl}${input}`, requestInit);
 	}
 	try {
-		const response = await fetch(request)
+		const response = await fetch(request);
 		if (!response.ok) {
-			throw new Error(`API request failed. Response: ${response.status} ${response.statusText}`)
+			let errorText = `API request failed. Response: ${response.status} ${response.statusText}`;
+			try {
+				const resErrorText = await response.text();
+				if (resErrorText.trim()) {
+					errorText = `API request failed. Response: ${resErrorText}`;
+				}
+			} finally {
+			}
+			throw new Error(errorText);
 		}
-		return response
+		return response;
 	} catch (err) {
 		if (err.message.indexOf('NetworkError') >= 0) {
-			showSiteError(new Elm('p', [
+			showSiteError(
+				new Elm('p', [
 					new Elm('span', 'Check your API connection details. '),
 					new Elm(
 						{
 							type: 'a',
 							attrs: {
-								'href': '/?refresh-session'
+								href: '/?refresh-session',
 							},
 						},
 						'Set API connection'
 					),
-					new Elm('span', '.')
-				]
-			))
+					new Elm('span', '.'),
+				])
+			);
 		}
-		throw err
+		throw err;
 	}
 }

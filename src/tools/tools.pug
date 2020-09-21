@@ -6,6 +6,43 @@ include ../part-header.pug
 			mailing list.
 		.tool-container
 			.tool-header
+				h2 Add Subscriber
+				button.button.minor.m-l-1.toggle-collapse ➕ Expand
+			.tool.collapsed
+				p.lh-1p5.
+					Add a subscriber
+				div
+					label(for='new-subscriber-email')
+						strong Subscriber Email
+				div
+					input.input.block.new-subscriber-email.m-b-0p5.w-100(
+						type='email'
+						name='new-subscriber-email'
+						placeholder='test@example.com'
+					)
+				div
+					label(for='new-subscriber-tags')
+						strong Subscriber Tags
+				div
+					input.input.block.new-subscriber-tags.m-b-0p5.w-100(
+						type='text'
+						name='new-subscriber-tags'
+						placeholder='test@example.com'
+					)
+				div
+					label(for='new-subscriber-properties')
+						strong Subscriber Properties
+				div
+					textarea.input.block.new-subscriber-properties.m-b-0p5.w-100(
+						name='new-subscriber-properties'
+						placeholder='propertyName1: propertyValue1\npropertyName2: propertyValue2'
+					)
+				div
+					button.button.main.new-subscriber-button Add Subscriber
+				#new-subscriber-status-container
+		hr
+		.tool-container
+			.tool-header
 				h2 View Subscriber
 				button.button.minor.m-l-1.toggle-collapse ➕ Expand
 			.tool.collapsed

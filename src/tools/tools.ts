@@ -50,47 +50,6 @@ const generateIndent = (size: number): string => {
 	return new Array(size).fill(' ').join('');
 };
 
-const prettyJSON = (jsonString: string): string => {
-	let output = '';
-	let inString = false;
-	let indentSize = 0;
-	let isEscape = false;
-	for (let i = 0; i < jsonString.length; i++) {
-		const char = jsonString[i];
-		if (!inString) {
-			if (char === '{' || char === '[') {
-				indentSize += 2;
-				output += `${char}\n${generateIndent(indentSize)}`;
-				continue;
-			}
-			if (char === ',') {
-				output += `${char}\n${generateIndent(indentSize)}`;
-				continue;
-			}
-			if (char === ':' && jsonString[i + 1] !== ' ') {
-				output += `${char} `;
-				continue;
-			}
-			if (char === '}' || char === ']') {
-				indentSize -= 2;
-				output += `\n${generateIndent(indentSize)}${char}`;
-				continue;
-			}
-		}
-		if (inString && char === '\\') {
-			isEscape = !isEscape;
-		}
-		if (char === '"' && !isEscape) {
-			inString = !inString;
-		}
-		if (inString && isEscape && char !== '\\') {
-			isEscape = false;
-		}
-		output += char;
-	}
-	return output;
-};
-
 const addToggleCollapseListeners = () => {
 	const buttons = bySelector('.toggle-collapse');
 	buttons.forEach((button) => {
@@ -133,6 +92,64 @@ onDOMReady(() => {
 	});
 	addToggleCollapseListeners();
 
+	const newSubscriberEmailInput = firstBySelector('.new-subscriber-email');
+	const newSubscriberTagsInput = firstBySelector('.new-subscriber-tags');
+	const newSubscriberPropertiesInput = firstBySelector(
+		'.new-subscriber-properties'
+	);
+	const newSubscriberButton = firstBySelector('.new-subscriber-button');
+	const newSubscriberStatusContainer = byId('new-subscriber-status-container');
+	newSubscriberButton.on('click', async () => {
+		try {
+			newSubscriberStatusContainer.clear();
+			newSubscriberButton.disable();
+			const email = newSubscriberEmailInput.value;
+			const tags = newSubscriberTagsInput.value.trim()
+				? newSubscriberTagsInput.value.split(',').map((t) => t.trim())
+				: [];
+			const properties = {};
+			if (newSubscriberPropertiesInput.value.trim()) {
+				const lines = newSubscriberPropertiesInput.value.split('\n');
+				lines.forEach((line) => {
+					if (line.trim()) {
+						const lineParts = line.split(/: ?/);
+						if (lineParts.length !== 2) {
+							throw new Error(
+								'Subscriber properties must be in the format "property: value", using only one property and value pair per line.'
+							);
+						}
+						properties[lineParts[0]] = lineParts[1];
+					}
+				});
+			}
+			const subscriber = Object.assign({}, properties, {
+				email,
+				tags,
+			});
+			await apiRequest('/admin/subscriber', {
+				method: 'POST',
+				body: JSON.stringify(subscriber),
+			});
+			newSubscriberStatusContainer.append(
+				new Elm({
+					type: 'div',
+					class: 'status success m-t-0p5',
+					text: 'Subscriber created',
+				})
+			);
+		} catch (err) {
+			newSubscriberStatusContainer.append(
+				new Elm({
+					type: 'div',
+					class: 'status error m-t-0p5',
+					text: err.message,
+				})
+			);
+		} finally {
+			newSubscriberButton.enable();
+		}
+	});
+
 	const getSubscriberButton = firstBySelector('.get-subscriber-info-button');
 	const handleGetSubscriberInfoButtonClick = async () => {
 		const errorContainer = byId('subscriber-error-container');
@@ -174,7 +191,7 @@ onDOMReady(() => {
 					{
 						type: 'pre',
 					},
-					prettyJSON(JSON.stringify(subscriber))
+					JSON.stringify(subscriber, null, 2)
 				),
 			]);
 			getSubscriberButton.enable();
@@ -279,7 +296,7 @@ onDOMReady(() => {
 																		{
 																			type: 'pre',
 																		},
-																		prettyJSON(JSON.stringify(item))
+																		JSON.stringify(item, null, 2)
 																	)
 																);
 																details.show();
