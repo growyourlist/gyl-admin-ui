@@ -7,6 +7,8 @@ import { SubscriberCountControl } from './subscriberCountControl';
 import { apiRequest } from '../common/apiRequest';
 import { loadTemplates } from '../common/loadTemplates';
 import { createTemplateListElm } from '../common/createTemplateListElm';
+import { InteractionWithAnyEmailControl } from './InteractionWithAnyEmailControl';
+import { IgnoreConfirmedControl } from './IgnoreConfirmedControl';
 
 const getInteractionString: (interaction: {
 	emailDate: string;
@@ -61,13 +63,21 @@ onDOMReady(async () => {
 			'#subscriber-interactions-container'
 		);
 		interactionsControl.loadEmailHistory();
+		const interactionWithAnyEmailControl = new InteractionWithAnyEmailControl(
+			'#subscriber-interactions-with-any-email-container'
+		);
+		const ignoreConfirmedControl = new IgnoreConfirmedControl(
+			'#ignore-confirmed-container'
+		);
 		const countControl = new SubscriberCountControl(
 			'#subscriber-count-container',
 			listsControl,
 			tagsControl,
 			excludeTagsControl,
 			propertiesControl,
-			interactionsControl
+			interactionsControl,
+			interactionWithAnyEmailControl,
+			ignoreConfirmedControl
 		);
 
 		const addTemplateToTemplateSelectionList = (templateName: string) => {
@@ -111,9 +121,6 @@ onDOMReady(async () => {
 							const wrapper = elm.parentUntil((p) =>
 								p.classes.contains('selected-template-name-container')
 							);
-							const percentageSpans: Array<HSHElement> = templateSelectionList.queryAll(
-								'.test-send-percentage'
-							);
 							wrapper.removeSelf();
 							const firstTemplate = templateSelectionList.query(
 								'.selected-template-name-container'
@@ -126,6 +133,15 @@ onDOMReady(async () => {
 								templateSelectionList.append(
 									new Elm('em', 'No email selected')
 								);
+							}
+							const percentageSpans: Array<HSHElement> = templateSelectionList.queryAll(
+								'.test-send-percentage'
+							);
+							const updatedTemplateCount = percentageSpans.length;
+							const updatedPercent =
+								Math.round(1000 / (updatedTemplateCount || 1)) / 10;
+							for (let i = 0; i < percentageSpans.length; i++) {
+								percentageSpans[i].text = updatedPercent.toString();
 							}
 						},
 					},
@@ -257,15 +273,22 @@ onDOMReady(async () => {
 
 		sendButton.on('click', () => {
 			const broadcastData: {
-				templates: Array<{
+				templates?: Array<{
 					name: string;
 					testPercent: number;
 				}>;
-				runAt: number | null;
+				templateId?: string;
+				runAt?: number;
 				list: string;
 				tags: string[];
 				excludeTags: string[];
 				properties: { [key: string]: string };
+				ignoreConfirmed: boolean;
+				interactionWithAnyEmail?: {
+					interactionType: string;
+					interactionPeriodValue: number;
+					interactionPeriodUnit: 'days';
+				};
 				interactions: {
 					emailDate: string;
 					templateId: string;
@@ -289,6 +312,8 @@ onDOMReady(async () => {
 				excludeTags: excludeTagsControl.getTags(),
 				properties: propertiesControl.getProperties(),
 				interactions: interactionsControl.getInteractions(),
+				interactionWithAnyEmail: interactionWithAnyEmailControl.getInteractionWithAnyEmailFilter(),
+				ignoreConfirmed: ignoreConfirmedControl.getIgnoreConfirmed(),
 			};
 
 			broadcastValidationMessage.clear();
@@ -301,6 +326,10 @@ onDOMReady(async () => {
 					})
 				);
 				return;
+			}
+			if (broadcastData.templates.length === 1) {
+				broadcastData.templateId = broadcastData.templates[0].name;
+				delete broadcastData.templates;
 			}
 			if (!broadcastData.list) {
 				broadcastValidationMessage.append(
@@ -320,10 +349,14 @@ onDOMReady(async () => {
 				new Elm(
 					'span',
 					`Send ${
-						broadcastData.templates.length === 1 ? 'email' : 'email variations'
-					}: ${broadcastData.templates
-						.map((template) => `${template.name} (${template.testPercent}%)`)
-						.join(', ')}`
+						broadcastData.templateId
+							? `email: ${broadcastData.templateId}`
+							: `email variations: ${broadcastData.templates
+									.map(
+										(template) => `${template.name} (${template.testPercent}%)`
+									)
+									.join(', ')} (These are sent to half the list. A winning template will be automatically selected and sent to the remaining half of the list.)`
+					}`
 				),
 				new Elm('br'),
 				new Elm('span', `At time: ${getSendTimeString(broadcastData.runAt)}`),
@@ -333,7 +366,9 @@ onDOMReady(async () => {
 				broadcastData.tags.length ||
 				broadcastData.excludeTags.length ||
 				Object.keys(broadcastData.properties).length ||
-				broadcastData.interactions.length;
+				broadcastData.interactions.length ||
+				broadcastData.interactionWithAnyEmail ||
+				broadcastData.ignoreConfirmed;
 			if (hasFilterData) {
 				confirmationMessage.push(
 					new Elm('span', `To list: ${listsControl.getList()}`)
@@ -341,37 +376,40 @@ onDOMReady(async () => {
 				confirmationMessage.push(new Elm('br'));
 				confirmationMessage.push(new Elm('span', 'Filter by subscribers:'));
 				confirmationMessage.push(new Elm('br'));
+				let isFirstFilter = true;
+				if (broadcastData.interactionWithAnyEmail) {
+					confirmationMessage.push(new Elm(
+						'span',
+						`  who have ${broadcastData.interactionWithAnyEmail.interactionType} any email in the last ${broadcastData.interactionWithAnyEmail.interactionPeriodValue} ${broadcastData.interactionWithAnyEmail.interactionPeriodUnit}`
+					))
+					confirmationMessage.push(new Elm('br'))
+					isFirstFilter = false;
+				}
 				if (broadcastData.tags.length) {
 					confirmationMessage.push(
 						new Elm(
 							'span',
-							`  who have the tags: ${broadcastData.tags.join(' and ')}`
+							`  ${isFirstFilter ? '' : 'and '}who have the tags: ${broadcastData.tags.join(' and ')}`
 						)
 					);
 					confirmationMessage.push(new Elm('br'));
+					isFirstFilter = false;
 				}
 				if (broadcastData.excludeTags.length) {
 					confirmationMessage.push(
 						new Elm(
 							'span',
-							`  ${
-								broadcastData.tags.length
-									? 'and who do not have the tags'
-									: 'who do not have the tags'
-							}: ${broadcastData.excludeTags.join(' or ')}`
+							`  ${isFirstFilter ? '' : 'and '}who do not have the tags: ${broadcastData.excludeTags.join(' or ')}`
 						)
 					);
 					confirmationMessage.push(new Elm('br'));
+					isFirstFilter = false;
 				}
 				if (Object.keys(broadcastData.properties).length) {
 					confirmationMessage.push(
 						new Elm(
 							'span',
-							`  ${
-								broadcastData.excludeTags.length || broadcastData.tags.length
-									? 'and who have the properties'
-									: 'who have the properties'
-							}:`
+							`  ${isFirstFilter ? '' : 'and '}who have the properties:`
 						)
 					);
 					confirmationMessage.push(new Elm('br'));
@@ -381,18 +419,13 @@ onDOMReady(async () => {
 						);
 						confirmationMessage.push(new Elm('br'));
 					}
+					isFirstFilter = false;
 				}
 				if (broadcastData.interactions.length) {
 					confirmationMessage.push(
 						new Elm(
 							'span',
-							`  ${
-								broadcastData.tags.length ||
-								broadcastData.excludeTags.length ||
-								Object.keys(broadcastData.properties).length
-									? 'and who had the following interactions with previous emails: '
-									: 'who had the following interactions with previous emails: '
-							}`
+							`  ${isFirstFilter ? '' : 'and '}who had the following interactions with previous emails:`
 						)
 					);
 					confirmationMessage.push(new Elm('br'));
@@ -402,6 +435,22 @@ onDOMReady(async () => {
 						);
 						confirmationMessage.push(new Elm('br'));
 					});
+					isFirstFilter = false;
+				}
+				if (broadcastData.ignoreConfirmed) {
+					confirmationMessage.push(
+						new Elm({
+							type: 'span',
+							attrs: {
+								style: 'color:#c6520d;font-weight:bold',
+							},
+							text: `  ⚠ ${
+								isFirstFilter ? '' : 'and '
+							}ignore whether or not subscribers have been confirmed`,
+						})
+					);
+					confirmationMessage.push(new Elm('br'));
+					isFirstFilter = false;
 				}
 			} else {
 				confirmationMessage.push(
@@ -417,7 +466,18 @@ onDOMReady(async () => {
 					'p',
 					'You are about the send a broadcast using the following settings:'
 				),
-				new Elm('div', new Elm('pre', confirmationMessage)),
+				new Elm(
+					'div',
+					new Elm(
+						{
+							type: 'pre',
+							attrs: {
+								style: 'white-space: pre-wrap',
+							},
+						},
+						confirmationMessage
+					)
+				),
 			]);
 
 			const confirmAndSend = async () => {

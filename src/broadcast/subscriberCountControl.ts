@@ -4,6 +4,8 @@ import { PropertiesControl } from './propertiesControl';
 import { InteractionsControl } from './interactionsControl';
 import { apiRequest } from '../common/apiRequest';
 import { ListsControl } from './listsControl';
+import { InteractionWithAnyEmailControl } from './InteractionWithAnyEmailControl';
+import { IgnoreConfirmedControl } from './IgnoreConfirmedControl';
 
 export class SubscriberCountControl {
 	private container: HSHElement;
@@ -17,7 +19,9 @@ export class SubscriberCountControl {
 		private readonly tagsControl: TagsControl,
 		private readonly excludeTagsControl: TagsControl,
 		private readonly propertiesControl: PropertiesControl,
-		private readonly interactionsControl: InteractionsControl
+		private readonly interactionsControl: InteractionsControl,
+		private readonly interactionWithAnyEmailControl: InteractionWithAnyEmailControl,
+		private readonly ignoreConfirmedControl: IgnoreConfirmedControl,
 	) {
 		this.container = firstBySelector(selector);
 		this.status = this.container.query('#subscriber-count-status');
@@ -74,12 +78,14 @@ export class SubscriberCountControl {
 		const excludeTags = this.excludeTagsControl.getTags();
 		const properties = this.propertiesControl.getProperties();
 		const interactions = this.interactionsControl.getInteractions();
+		const interactionWithAnyEmail = this.interactionWithAnyEmailControl.getInteractionWithAnyEmailFilter();
+		const ignoreConfirmed = this.ignoreConfirmedControl.getIgnoreConfirmed()
 		this.status.text = 'Counting... ';
 		this.button.disable();
 		try {
 			await apiRequest('/admin/subscriber-count', {
 				method: 'POST',
-				body: JSON.stringify({ tags, excludeTags, properties, interactions }),
+				body: JSON.stringify({ tags, excludeTags, properties, interactions, interactionWithAnyEmail, ignoreConfirmed }),
 			});
 			// No need to await, it's intended that it runs on a separate thread
 			this.doCount();

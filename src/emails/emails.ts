@@ -275,7 +275,7 @@ onDOMReady(async () => {
 		CreatedTimestamp: string;
 	}) => {
 		return new Elm({ type: 'li', attrs: { class: 'm-b-0p3' } }, [
-			new Elm('span', templateData.Name),
+			new Elm({type: 'span', attrs: { class: 'template-name' }}, templateData.Name),
 			' ',
 			new Elm({
 				type: 'span',
@@ -456,15 +456,20 @@ onDOMReady(async () => {
 				HtmlPart: quillEditor.root.innerHTML,
 				TextPart: templateTextElm.value,
 			});
+			let existing: HSHElement | null = null;
 			if (emailList.text.indexOf('No emails') >= 0) {
 				emailList.clear();
+			} else {
+				existing = emailList.queryAll('.template-name').find(i => i.text === templateNameElm.value)
 			}
-			emailList.append(
-				generateTemplateListItem({
-					CreatedTimestamp: new Date().toISOString(),
-					Name: templateNameElm.value,
-				})
-			);
+			if (!existing) {
+				emailList.append(
+					generateTemplateListItem({
+						CreatedTimestamp: new Date().toISOString(),
+						Name: templateNameElm.value,
+					})
+				);
+			}
 			createUpdateStatus.append(
 				new Elm({
 					type: 'p',

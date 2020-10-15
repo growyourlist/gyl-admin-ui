@@ -39,8 +39,31 @@ include ../part-header.pug
 					div
 						input.property-value.input.w-100(placeholder="Value; e.g. New York")
 					button.button.secondary.add-property-button Add property
+			#subscriber-interactions-with-any-email-container
+				p: strong Filter by subscriber interactions with any email
+				div.m-b-1
+					span Filter by subscriber interactions with any email:
+					label
+						input(type='radio' name='use-interactions-with-any-email' value='no' checked)
+						span No
+					label
+						input(type='radio' name='use-interactions-with-any-email' value='yes')
+						span Yes
+				div#interaction-with-any-email-controls-wrapper(style='display:none')
+					select#interaction-with-any-email-type.input
+						option(value='clicked') clicked
+						option(value='opened or clicked') opened or clicked
+					|
+					|
+					span any email in the last
+					|
+					|
+					input#interaction-with-any-email-period.input(type='number' step='1' min='0' value='30' size='4')
+					|
+					|
+					span days.
 			#subscriber-interactions-container
-				p: strong Filter by subscriber interactions with earlier emails
+				p: strong Filter by subscriber interactions with specific emails
 				p
 					span Interactions:
 					<span> </span>
@@ -86,6 +109,29 @@ include ../part-header.pug
 
 						button#reset-interaction.button.secondary.m-r-0p5 Reset interaction filter
 						button#add-interaction-button.button.secondary Add interaction filter
+			#ignore-confirmed-container
+				p: strong ⚠ Ignore whether or not the subscriber has been confirmed
+				p
+					strong Warning!
+					|
+					|
+					span.
+						Only use this if you are confident your subscribe process only lets through real
+						humans, with their correct email address (for example, it uses a CAPTCHA and
+						subscribers have a chance to check and correct their email before submitting). Risks of
+						mis-using this feature include increasing the number of complaints against your mailing
+						list, having your ability to send emails paused by AWS, among other othings. Preferrably, build confirmation of
+						your subscribers' email addresses into your sign-up processes rather than use this
+						feature.
+				p
+					label.m-r-0p5
+						input#ignore-confirmed-radio-no(name='ignore-confirmed' type='radio' value='no' checked)
+						|
+						| No
+					label#ignore-confirmed-radio-yes-label
+						input#ignore-confirmed-radio-yes(name='ignore-confirmed' type='radio' value='yes')
+						|
+						| Yes
 		#subscriber-count-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 Estimate number of recipients
 			p
@@ -117,6 +163,15 @@ include ../part-header.pug
 					input#template-name.input.w-100(placeholder="e.g. EmailName")
 				div.m-t-0p5
 					button#select-template-button.button.secondary Use email
+				div#template-test-duration-container(style='display:none')
+					div Time to allow for test
+						label Value
+						input#template-test-duration-value(type='number' value='4')
+						label Unit
+						select#template-test-duration-unit
+							option(value='minutes') minutes
+							option(value='hours' selected) hours
+							option(value='days') days
 				#template-list
 		#broadcast-time-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 When do you want the broadcast to start sending?

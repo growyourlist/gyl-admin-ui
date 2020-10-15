@@ -133,6 +133,10 @@ export class HSHElement {
 		return this._element.childNodes;
 	}
 
+	get children(): HTMLCollection {
+		return this._element.children
+	}
+
 	get style(): CSSStyleDeclaration {
 		return this._element.style;
 	}
