@@ -410,17 +410,30 @@ onDOMReady(async () => {
 				})
 			);
 			sendTestEmailButton.disable();
-			await apiRequest('/admin/single-email-send', {
-				method: 'POST',
-				body: JSON.stringify({
-					toEmailAddress: byId('test-email-recipient').value,
-					subject: templateSubjectElm.value,
-					body: {
+			const postData: {
+				toEmailAddress: string
+				subject?: string
+				body?: {
+					text: string
+					html: string
+				}
+				templateId?: string
+			} = {
+				toEmailAddress: byId('test-email-recipient').value,
+			}
+			if (byId('send-test-as-content').checked) {
+				postData.subject = templateSubjectElm.value;
+				postData.body = {
 						text: templateTextElm.value,
 						html: quillEditor.root.innerHTML,
-					},
-				}),
-			});
+				}
+			} else {
+				postData.templateId = templateNameElm.value
+			}
+			await apiRequest('/admin/single-email-send', {
+				method: 'POST',
+				body: JSON.stringify(postData),
+			})
 			testEmailStatus.clear();
 			testEmailStatus.append(
 				new Elm({

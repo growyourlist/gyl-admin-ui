@@ -46,6 +46,15 @@ include ../part-header.pug
 					input.input.w-100(type="text" id='test-email-recipient' placeholder='test@example.org')
 				#test-email-status
 				.m-t-0p5
+					label
+						input(type='radio' id='send-test-as-template' name='send-test-type' checked value='template')
+						span Send as template (make sure template is saved first)
+					|
+					|
+					label
+						input(type='radio' id='send-test-as-content' name='send-test-type' value='content')
+						span Send as text/html content (don't need to save, but placeholders won't be replaced)
+				.m-t-0p5
 					button#send-test-email-button.button.secondary Send test email
 			.m-t-1
 				#create-template-output
