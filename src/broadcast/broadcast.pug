@@ -173,6 +173,16 @@ include ../part-header.pug
 							option(value='hours' selected) hours
 							option(value='days') days
 				#template-list
+		#broadcast-tags-container.box.p-l-1.p-r-1.p-b-1.m-b-1
+			h3 Which tag should be used?
+			p.
+				If you would like all subscribers who click on a link in this broadcast to get a tag, enter
+				that tag here.
+			.tag-on-click-control
+				label Tag on click:
+				|
+				|
+				input#tag-on-click.input(placeholder="exampleTag")
 		#broadcast-time-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 When do you want the broadcast to start sending?
 			p.

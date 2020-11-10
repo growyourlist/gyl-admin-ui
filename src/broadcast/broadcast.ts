@@ -46,6 +46,7 @@ onDOMReady(async () => {
 		});
 		const broadcastAudience = byId('broadcast-audience');
 		const broadcastEmailContainer = byId('broadcast-email-container');
+		const broadcastTagsContainer = byId('broadcast-tags-container');
 		const broadcastTimeContainer = byId('broadcast-time-container');
 		const templateIdElm = byId('template-name');
 		const templateListElm = byId('template-list');
@@ -205,6 +206,7 @@ onDOMReady(async () => {
 			countControl.hide();
 			broadcastEmailContainer.hide();
 			broadcastTimeContainer.hide();
+			broadcastTagsContainer.hide();
 		};
 
 		const showInputControls = () => {
@@ -212,6 +214,7 @@ onDOMReady(async () => {
 			countControl.show();
 			broadcastEmailContainer.show();
 			broadcastTimeContainer.show();
+			broadcastTagsContainer.show();
 		};
 
 		const startDateElm = byId('start-send-at-date');
@@ -296,6 +299,7 @@ onDOMReady(async () => {
 					open?: boolean;
 					received?: boolean;
 				}[];
+				tagOnClick?: string;
 			} = {
 				templates: templateSelectionList
 					.queryAll('.selected-template-name-container')
@@ -314,8 +318,8 @@ onDOMReady(async () => {
 				interactions: interactionsControl.getInteractions(),
 				interactionWithAnyEmail: interactionWithAnyEmailControl.getInteractionWithAnyEmailFilter(),
 				ignoreConfirmed: ignoreConfirmedControl.getIgnoreConfirmed(),
+				tagOnClick: byId('tag-on-click').value.trim(),
 			};
-
 			broadcastValidationMessage.clear();
 			if (!broadcastData.templates.length) {
 				broadcastValidationMessage.append(
@@ -459,6 +463,14 @@ onDOMReady(async () => {
 						`To all subscribers on the list: ${listsControl.getList()}`
 					)
 				);
+				confirmationMessage.push(new Elm('br'))
+			}
+			if (broadcastData.tagOnClick) {
+				confirmationMessage.push(new Elm({
+					type: 'span',
+					text: `Tag to assign to subscriber when email is clicked: ${broadcastData.tagOnClick}`
+				}))
+				confirmationMessage.push(new Elm('br'))
 			}
 			confirmationMessage.push(new Elm('span'));
 			confirmationDetailsBox.append([
