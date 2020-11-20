@@ -359,7 +359,7 @@ onDOMReady(async () => {
 									.map(
 										(template) => `${template.name} (${template.testPercent}%)`
 									)
-									.join(', ')} (These are sent to half the list. A winning template will be automatically selected and sent to the remaining half of the list.)`
+									.join(', ')} (These variations are sent to a total of half the list. A winning email variation will be automatically selected based on send-to-click ratio performance and this winning email variation will be sent to the remaining half of the list).`
 					}`
 				),
 				new Elm('br'),
