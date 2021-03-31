@@ -22,7 +22,7 @@
 		"mini-css-extract-plugin": "^0.10.0",
 		"monaco-editor-webpack-plugin": "^1.8.2",
 		"node-sass": "^4.13.0",
-		"pug": "^3.0.0",
+		"pug": "^3.0.1",
 		"pug-loader": "^2.4.0",
 		"sass-loader": "^9.0.3",
 		"style-loader": "^1.1.3",
