@@ -9,6 +9,7 @@ import { loadTemplates } from '../common/loadTemplates';
 import { createTemplateListElm } from '../common/createTemplateListElm';
 import { InteractionWithAnyEmailControl } from './InteractionWithAnyEmailControl';
 import { IgnoreConfirmedControl } from './IgnoreConfirmedControl';
+import { WinningTypeControl } from './WinningTypeControl';
 
 const getInteractionString: (interaction: {
 	emailDate: string;
@@ -69,6 +70,9 @@ onDOMReady(async () => {
 		);
 		const ignoreConfirmedControl = new IgnoreConfirmedControl(
 			'#ignore-confirmed-container'
+		);
+		const winningTypeControl = new WinningTypeControl(
+			'#winning-type-container'
 		);
 		const countControl = new SubscriberCountControl(
 			'#subscriber-count-container',
@@ -144,6 +148,9 @@ onDOMReady(async () => {
 							for (let i = 0; i < percentageSpans.length; i++) {
 								percentageSpans[i].text = updatedPercent.toString();
 							}
+							if (updatedTemplateCount < 2) {
+								winningTypeControl.hide();
+							}
 						},
 					},
 				})
@@ -160,6 +167,9 @@ onDOMReady(async () => {
 			existingTemplatesPercentageSpans.forEach(
 				(span) => (span.text = equalTestPercent.toString())
 			);
+			if (templateCount > 1) {
+				winningTypeControl.show();
+			}
 		};
 
 		useTemplateButton.on('click', () => {
@@ -300,6 +310,7 @@ onDOMReady(async () => {
 					received?: boolean;
 				}[];
 				tagOnClick?: string;
+				winningType?: string;
 			} = {
 				templates: templateSelectionList
 					.queryAll('.selected-template-name-container')
@@ -320,6 +331,9 @@ onDOMReady(async () => {
 				ignoreConfirmed: ignoreConfirmedControl.getIgnoreConfirmed(),
 				tagOnClick: byId('tag-on-click').value.trim(),
 			};
+			if (broadcastData.templates.length > 1) {
+				broadcastData.winningType = winningTypeControl.getWinningType();
+			}
 			broadcastValidationMessage.clear();
 			if (!broadcastData.templates.length) {
 				broadcastValidationMessage.append(
@@ -417,7 +431,7 @@ onDOMReady(async () => {
 						)
 					);
 					confirmationMessage.push(new Elm('br'));
-					for (let prop in broadcastData.properties) {
+					for (const prop in broadcastData.properties) {
 						confirmationMessage.push(
 							new Elm('span', `    ${prop}: ${broadcastData.properties[prop]}`)
 						);

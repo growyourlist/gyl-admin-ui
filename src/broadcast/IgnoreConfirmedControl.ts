@@ -1,29 +1,11 @@
-import { HSHElement, firstBySelector, Elm } from '../common/hsh/hsh';
+// eslint-disable-next-line no-unused-vars
+import { firstBySelector, Elm, HSHElement } from '../common/hsh/hsh';
 
 export class IgnoreConfirmedControl {
 	private wrapper: HSHElement;
 	private radioYes: HSHElement;
 	private radioNo: HSHElement;
 	private radioYesLabel: HSHElement;
-
-	addWarningNote() {
-		this.radioYesLabel.style.setProperty('color', '#c6520d');
-		this.radioYesLabel.style.setProperty('font-weight', 'bold');
-		this.radioYesLabel.append(
-			new Elm({
-				type: 'span',
-				class: 'warning-note',
-				text: ' (See warning note above)',
-				attrs: { 'style': 'font-weight:normal'},
-			})
-		);
-	}
-
-	removeWarningNote() {
-		this.radioYesLabel.style.removeProperty('color');
-		this.radioYesLabel.style.removeProperty('font-weight');
-		this.radioYesLabel.query('.warning-note').removeSelf();
-	}
 
 	constructor(selector: string) {
 		this.wrapper = firstBySelector(selector);
@@ -45,6 +27,25 @@ export class IgnoreConfirmedControl {
 		if (this.radioYes.checked) {
 			this.addWarningNote()
 		}
+	}
+
+	addWarningNote() {
+		this.radioYesLabel.style.setProperty('color', '#c6520d');
+		this.radioYesLabel.style.setProperty('font-weight', 'bold');
+		this.radioYesLabel.append(
+			new Elm({
+				type: 'span',
+				class: 'warning-note',
+				text: ' (See warning note above)',
+				attrs: { 'style': 'font-weight:normal'},
+			})
+		);
+	}
+
+	removeWarningNote() {
+		this.radioYesLabel.style.removeProperty('color');
+		this.radioYesLabel.style.removeProperty('font-weight');
+		this.radioYesLabel.query('.warning-note').removeSelf();
 	}
 
 	hide() {
