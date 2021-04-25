@@ -373,13 +373,17 @@ onDOMReady(async () => {
 									.map(
 										(template) => `${template.name} (${template.testPercent}%)`
 									)
-									.join(', ')} (These variations are sent to a total of half the list. A winning email variation will be automatically selected based on send-to-click ratio performance and this winning email variation will be sent to the remaining half of the list).`
+									.join(', ')}`
 					}`
-				),
-				new Elm('br'),
-				new Elm('span', `At time: ${getSendTimeString(broadcastData.runAt)}`),
-				new Elm('br'),
+				)
 			];
+			if (Array.isArray(broadcastData.templates) && broadcastData.templates.length > 1) {
+				confirmationMessage.push(new Elm('br'))				
+				confirmationMessage.push(new Elm('span', `\tWinning email variation selection method: ${broadcastData.winningType}`))
+			}
+			confirmationMessage.push(new Elm('br'))
+			confirmationMessage.push(new Elm('span', `At time: ${getSendTimeString(broadcastData.runAt)}`))
+			confirmationMessage.push(new Elm('br'))
 			const hasFilterData =
 				broadcastData.tags.length ||
 				broadcastData.excludeTags.length ||
