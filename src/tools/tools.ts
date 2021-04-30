@@ -46,10 +46,6 @@ const getQueueItemElm = (queueItem: any): Elm => {
 	return new Elm('strong', output);
 };
 
-const generateIndent = (size: number): string => {
-	return new Array(size).fill(' ').join('');
-};
-
 const addToggleCollapseListeners = () => {
 	const buttons = bySelector('.toggle-collapse');
 	buttons.forEach((button) => {
@@ -186,6 +182,131 @@ onDOMReady(() => {
 						'p',
 						`Tags: ${subscriber.tags && subscriber.tags.join(', ')}`
 					),
+					new Elm('p', [
+						new Elm({
+							type: 'button',
+							class: 'button minor',
+							text: '❌ Delete Subscriber',
+							events: {
+								'click': async (event) => {
+									const button = new HSHElement(event.target);
+									const infoContainer = button.parentUntil(
+										elm => elm.classes.contains('subscriber-info-container')
+									)
+									if (!infoContainer) {
+										console.error(`No subscriber-info-container found`);
+										return;
+									}
+									try {
+										if (confirm(`Are you sure you want to delete ${subscriber.email}?`)) {
+											infoContainer.style.setProperty('position', 'relative');
+											infoContainer.prepend(new Elm(
+												{
+													type: 'div',
+													class: 'overlay',
+													attrs: {
+														style: 'position: absolute;top: 0;left: 0; '
+															+ 'bottom: 0; width: 100%; display: flex; '
+															+ 'justify-content: center; align-items: center; '
+															+ 'background-color: rgba(0, 0, 0, .80)',
+													},
+												},
+												new Elm(
+													{
+														type: 'div',
+														attrs: {
+															style: 'text-align: center',
+														},
+														class: 'overlay-content',
+													},
+													new Elm(
+														{
+															type: 'div',
+															attrs: {
+																style: 'font-size: 2em; font-weight: bold; '
+																	+ 'color: #fff; text-shadow: 2px 2px 3px black;'
+															},
+															text: 'Deleting...',
+														}
+													)
+												)
+											))
+											const deleteRes = await apiRequest(
+												`/admin/subscriber?subscriberId=${subscriber.subscriberId}`,
+												{
+													method: 'DELETE'
+												}
+											)
+											if (!deleteRes.ok) {
+												const resText = await deleteRes.text()
+												throw new Error(resText || `${deleteRes.status} ${deleteRes.statusText}`)
+											}
+											const overlayContent = infoContainer.query('.overlay-content')
+											overlayContent.clear();
+											overlayContent.append([
+												new Elm({
+													type: 'div',
+													attrs: {
+														style: 'font-size: 2em; font-weight: bold; '
+															+ 'color: #fff; text-shadow: 2px 2px 3px black;'
+													},
+													text: 'Deleted ✔',
+												}),
+												new Elm(
+													{ type: 'div' },
+													new Elm({
+														type: 'button',
+														class: 'button main',
+														text: 'OK',
+														events: {
+															'click': () => {
+																const overlay = infoContainer.query('.overlay');
+																if (overlay) {
+																	overlay.removeSelf()
+																	subscriberInfoContainer.clear()
+																}
+															}
+														}
+													})
+												)
+											])
+										}
+									} catch (err) {
+										console.log(err)
+										const overlayContent = infoContainer.query('.overlay-content')
+										overlayContent.clear();
+										overlayContent.append([
+											new Elm({
+												type: 'div',
+												attrs: {
+													style: 'font-size: 2em; font-weight: bold; '
+														+ 'color: #d29a9a; text-shadow: 2px 2px 3px black;'
+												},
+												text: `Error deleting subscriber: ${err.message}`,
+											}),
+											new Elm(
+												{ type: 'div' },
+												new Elm({
+													type: 'button',
+													class: 'button main',
+													text: 'OK',
+													events: {
+														'click': () => {
+															const overlay = infoContainer.query('.overlay');
+															if (overlay) {
+																overlay.removeSelf()
+															}
+														}
+													}
+												})
+											)
+										])
+										// TODO show error to user
+									}
+								}
+							},
+						})
+					])
 				]),
 				new Elm(
 					{
@@ -336,7 +457,7 @@ onDOMReady(() => {
 									),
 								]);
 							})
-					  ),
+						),
 			]);
 		} catch (err) {
 			console.error(err);
