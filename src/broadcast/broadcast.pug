@@ -177,9 +177,9 @@ include ../part-header.pug
 				p: strong How should the winning email should be chosen?
 				div
 					select#winning-email-method.input
-						option(value='content: email with most clicks' selected) content: email with most clicks
+						option(value='auto-merge subject (most opens) and content (most clicks) into new email' selected) auto-merge subject (most opens) and content (most clicks) into new email
+						option(value='content: email with most clicks') content: email with most clicks
 						option(value='subject: email with most opens') subject: email with most opens
-						option(value='auto-merge subject (most opens) and content (most clicks) into new email') auto-merge subject (most opens) and content (most clicks) into new email
 		#broadcast-tags-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 Which tag should be used?
 			p.
