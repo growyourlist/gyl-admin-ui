@@ -10,6 +10,7 @@ import { createTemplateListElm } from '../common/createTemplateListElm';
 import { InteractionWithAnyEmailControl } from './InteractionWithAnyEmailControl';
 import { IgnoreConfirmedControl } from './IgnoreConfirmedControl';
 import { WinningTypeControl } from './WinningTypeControl';
+import { JoinedAfterControl } from './joinedAfterControl';
 
 const getInteractionString: (interaction: {
 	emailDate: string;
@@ -58,6 +59,7 @@ onDOMReady(async () => {
 		listsControl.loadLists();
 		const tagsControl = new TagsControl('#tags-container');
 		const excludeTagsControl = new TagsControl('#exclude-tags-container');
+		const joinedAfterControl = new JoinedAfterControl('#joined-after-container');
 		const propertiesControl = new PropertiesControl(
 			'#subscriber-properties-filter-container'
 		);
@@ -79,6 +81,7 @@ onDOMReady(async () => {
 			listsControl,
 			tagsControl,
 			excludeTagsControl,
+			joinedAfterControl,
 			propertiesControl,
 			interactionsControl,
 			interactionWithAnyEmailControl,
@@ -295,6 +298,7 @@ onDOMReady(async () => {
 				list: string;
 				tags: string[];
 				excludeTags: string[];
+				joinedAfter?: number;
 				properties: { [key: string]: string };
 				ignoreConfirmed: boolean;
 				interactionWithAnyEmail?: {
@@ -325,6 +329,7 @@ onDOMReady(async () => {
 				list: listsControl.getList(),
 				tags: tagsControl.getTags(),
 				excludeTags: excludeTagsControl.getTags(),
+				joinedAfter: joinedAfterControl.getJoinedAfter(),
 				properties: propertiesControl.getProperties(),
 				interactions: interactionsControl.getInteractions(),
 				interactionWithAnyEmail: interactionWithAnyEmailControl.getInteractionWithAnyEmailFilter(),
@@ -390,6 +395,7 @@ onDOMReady(async () => {
 				Object.keys(broadcastData.properties).length ||
 				broadcastData.interactions.length ||
 				broadcastData.interactionWithAnyEmail ||
+				broadcastData.joinedAfter ||
 				broadcastData.ignoreConfirmed;
 			if (hasFilterData) {
 				confirmationMessage.push(
@@ -426,6 +432,18 @@ onDOMReady(async () => {
 					);
 					confirmationMessage.push(new Elm('br'));
 					isFirstFilter = false;
+				}
+				if (broadcastData.joinedAfter) {
+					confirmationMessage.push(
+						new Elm(
+							'span',
+							`  ${isFirstFilter ? '' : 'and '}who joined after: ${
+								new Date(broadcastData.joinedAfter).toUTCString()
+							} (UTC) / ${
+								new Date(broadcastData.joinedAfter).toLocaleString()
+							} (local time)`
+						)
+					)
 				}
 				if (Object.keys(broadcastData.properties).length) {
 					confirmationMessage.push(

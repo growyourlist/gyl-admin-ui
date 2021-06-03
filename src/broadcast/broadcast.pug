@@ -27,6 +27,21 @@ include ../part-header.pug
 					div
 						input#new-exclude-tag-name.input.new-tag-name.w-100(placeholder='Enter a tag')
 					button#add-exclude-tag-button.button.secondary.add-tag-button Add tag
+			#joined-after-container
+				p: strong Enter a "joined after" date if you want to send to subscribers who joined after a particular date
+				p Joined after:
+				#joined-after-input-container
+					input#joined-after-date-input.input(type="date")
+					input#joined-after-time-input.input(type="time" disabled)
+					|
+					|
+					span (Local Time)
+				#joined-after-utc-time.m-t-0p5
+					span UTC time:
+					|
+					|
+					em &lt;Date and time not specified&gt;
+				#joined-after-validation
 			#subscriber-properties-filter-container
 				p: strong Enter the values of subscriber properties to filter by
 				p
