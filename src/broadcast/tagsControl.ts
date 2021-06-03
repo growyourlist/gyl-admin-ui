@@ -54,7 +54,7 @@ export class TagsControl {
 		})
 
 		this.newTagName.on('keypress', (event) => {
-			if (event.keyCode === 13 && this.newTagName.value.trim()) {
+			if (event.code === 'Enter' && this.newTagName.value.trim()) {
 				event.preventDefault()
 				event.stopPropagation()
 				this.addTag(this.newTagName.value)
