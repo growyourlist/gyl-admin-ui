@@ -4,6 +4,8 @@ import { apiRequest } from '../common/apiRequest';
 import { confirmDelete } from '../common/confirmDelete';
 import { createTemplateListElm } from '../common/createTemplateListElm';
 import { loadTemplates } from '../common/loadTemplates';
+// eslint-disable-next-line no-unused-vars
+import { Autoresponder } from './types/Autoresponder';
 
 const pluralize = (value: number, unit: string): string => {
 	if (Math.abs(value) === 1) {
@@ -16,7 +18,7 @@ const getHumanTimeParts = (
 	milliseconds: number,
 	pluralizeUnit: boolean = false
 ): { timeValue: string; timeUnit: string } => {
-	let time = milliseconds;
+	const time = milliseconds;
 	if (time % 86400000 === 0) {
 		const value = time / 86400000;
 		return {
@@ -62,11 +64,6 @@ const getMillisecondsNew = (timeValue: string, timeUnit: string): number => {
 		default:
 			throw new Error('Invaid time unit');
 	}
-};
-
-const timeStrPattern = /^(\d+ days?\s?)?(\d+ hrs?\s?)?(\d+ mins?\s?)?(\d+ s)?$/;
-const isValidTimeString = (humanTime: string): boolean => {
-	return timeStrPattern.test(humanTime);
 };
 
 const isValidStepName = (stepName: string) => {
@@ -189,7 +186,7 @@ onDOMReady(async () => {
 												'make choice based on tag',
 												'unsubscribe',
 												'wait',
-										  ],
+											],
 							}),
 						]),
 						new Elm({ type: 'div', class: 'm-b-0p3' }, [
@@ -336,7 +333,7 @@ onDOMReady(async () => {
 						new Elm('label', 'If the result of the tag check is:')
 					),
 					new Elm(() => {
-						let options = [];
+						const options = [];
 						if (!stepDef.yesAction) {
 							options.push('yes');
 						}
@@ -448,7 +445,7 @@ onDOMReady(async () => {
 			time?: number;
 			choiceResult?: 'yes' | 'no';
 		}[] = [];
-		for (let step in steps) {
+		for (const step in steps) {
 			const fromId = step.replace(/\s/g, '');
 			stepNameToId[step] = fromId;
 			idToStepName[fromId] = step;
@@ -486,7 +483,7 @@ onDOMReady(async () => {
 				});
 			}
 		}
-		for (let step in stepNameToId) {
+		for (const step in stepNameToId) {
 			if (steps[step].type === 'send email') {
 				graph += stepNameToId[step] + '["' + step + '"]\n';
 			} else if (steps[step].type === 'make choice based on tag') {
@@ -501,7 +498,7 @@ onDOMReady(async () => {
 			}
 			graph += `click ${stepNameToId[step]} arStepClick\n`;
 		}
-		for (let connection of connections) {
+		for (const connection of connections) {
 			if (connection.time === 0 || connection.time) {
 				const { timeUnit, timeValue } = getHumanTimeParts(
 					connection.time,
@@ -561,7 +558,7 @@ onDOMReady(async () => {
 			newName,
 			Object.getOwnPropertyDescriptor(newSteps, oldName)
 		);
-		for (let step in newSteps) {
+		for (const step in newSteps) {
 			if (step !== newName && newSteps[step].nextAction === oldName) {
 				newSteps[step].nextAction = newName;
 			}
@@ -576,7 +573,7 @@ onDOMReady(async () => {
 		const def = getDefinition();
 		const newSteps = JSON.parse(JSON.stringify(def.steps));
 		delete newSteps[stepName];
-		for (let step in newSteps) {
+		for (const step in newSteps) {
 			if (newSteps[step].nextAction === stepName) {
 				delete newSteps[step].nextAction;
 				delete newSteps[step].runNextIn;
@@ -703,6 +700,7 @@ onDOMReady(async () => {
 						attrs: { id: 'tag-reason', class: 'input w-100' },
 						value: stepDef.tagReason || defaultTagReasonElm.value || '',
 						events: {
+							onchange: () => updateStepDef('tag-reason', 'tagReason'),
 							keyup: () => updateStepDef('tag-reason', 'tagReason'),
 						},
 					})
@@ -950,6 +948,21 @@ onDOMReady(async () => {
 		return obj;
 	};
 
+	const ensureDefaultTagReasonAppliedToEmptyTagReasons = () => {
+		const autoresponderData = JSON.parse(definitionElm.value) as Autoresponder;
+		const { defaultTagReason, steps } = autoresponderData;
+		autoresponderIdElm.value = autoresponderData.autoresponderId;
+		defaultTagReasonElm.value = defaultTagReason;
+		if (defaultTagReason) {
+			Object.keys(steps).forEach(stepName => {
+				if (!autoresponderData.steps[stepName].tagReason?.trim()) {
+					autoresponderData.steps[stepName].tagReason = defaultTagReason;
+				}
+			})
+		}
+		updateDefinition(autoresponderData, true);
+	}
+
 	const validateAutoresponder: () => boolean | string = () => {
 		const autoresponderData = JSON.parse(definitionElm.value);
 		if (!autoresponderData.autoresponderId) {
@@ -982,6 +995,7 @@ onDOMReady(async () => {
 	const postAutoresponderButton = byId('post-autoresponder-button');
 	postAutoresponderButton.on('click', async () => {
 		postAutoresponderOutput.clear();
+		ensureDefaultTagReasonAppliedToEmptyTagReasons();
 		const errorMessage = validateAutoresponder();
 		if (typeof errorMessage === 'string') {
 			postAutoresponderOutput.append(
@@ -1119,10 +1133,18 @@ onDOMReady(async () => {
 		const autoresponderResponse = await apiRequest(
 			`/admin/autoresponder?autoresponderId=${autoresponderId}`
 		);
-		const autoresponderData = await autoresponderResponse.json();
+		const autoresponderData = (await autoresponderResponse.json()) as Autoresponder;
 		closeStepEditor();
+		const { defaultTagReason, steps } = autoresponderData;
 		autoresponderIdElm.value = autoresponderData.autoresponderId;
-		defaultTagReasonElm.value = autoresponderData.defaultTagReason;
+		defaultTagReasonElm.value = defaultTagReason;
+		if (defaultTagReason) {
+			Object.keys(steps).forEach(stepName => {
+				if (!autoresponderData.steps[stepName].tagReason?.trim()) {
+					autoresponderData.steps[stepName].tagReason = defaultTagReason;
+				}
+			})
+		}
 		updateDefinition(autoresponderData, true);
 	};
 
@@ -1234,7 +1256,7 @@ onDOMReady(async () => {
 
 	const loadAutoresponders = async () => {
 		try {
-			let nextToken = '';
+			const nextToken = '';
 			listStatusElm.clear();
 			listStatusElm.append(
 				new Elm({
