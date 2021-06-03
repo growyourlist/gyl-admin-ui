@@ -62,7 +62,7 @@ export class PropertiesControl {
 		});
 
 		this.propertyName.on('keypress', (event) => {
-			if (event.keyCode === 13 && this.propertyName.value.trim()) {
+			if (event.code === 'Enter' && this.propertyName.value.trim()) {
 				event.preventDefault()
 				event.stopPropagation()
 				const propertyName = this.propertyName.value;
