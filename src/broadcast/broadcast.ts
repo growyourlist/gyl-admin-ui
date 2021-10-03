@@ -11,6 +11,7 @@ import { InteractionWithAnyEmailControl } from './InteractionWithAnyEmailControl
 import { IgnoreConfirmedControl } from './IgnoreConfirmedControl';
 import { WinningTypeControl } from './WinningTypeControl';
 import { JoinedAfterControl } from './joinedAfterControl';
+import { BroadcastTimeControl } from './broadcastTimeControl';
 
 const getInteractionString: (interaction: {
 	emailDate: string;
@@ -60,6 +61,7 @@ onDOMReady(async () => {
 		const tagsControl = new TagsControl('#tags-container');
 		const excludeTagsControl = new TagsControl('#exclude-tags-container');
 		const joinedAfterControl = new JoinedAfterControl('#joined-after-container');
+		const broadcastTimeControl = new BroadcastTimeControl('#broadcast-time-container');
 		const propertiesControl = new PropertiesControl(
 			'#subscriber-properties-filter-container'
 		);
@@ -230,45 +232,45 @@ onDOMReady(async () => {
 			broadcastTagsContainer.show();
 		};
 
-		const startDateElm = byId('start-send-at-date');
-		const startTimeElm = byId('start-send-at-time');
-		const utcTimeElm = byId('utc-time');
-		const updateUTCTime = () => {
-			const now = new Date();
-			const startDate =
-				startDateElm.valueAsNumber ||
-				Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-			const startTime = startTimeElm.valueAsNumber || 0;
-			const targetDatetime = new Date(
-				startDate + startTime + now.getTimezoneOffset() * 60 * 1000
-			);
-			if (targetDatetime < now) {
-				return (utcTimeElm.text = 'now');
-			}
-			utcTimeElm.text = targetDatetime.toISOString();
-		};
+		// const startDateElm = byId('start-send-at-date');
+		// const startTimeElm = byId('start-send-at-time');
+		// const utcTimeElm = byId('utc-time');
+		// const updateUTCTime = () => {
+		// 	const now = new Date();
+		// 	const startDate =
+		// 		startDateElm.valueAsNumber ||
+		// 		Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+		// 	const startTime = startTimeElm.valueAsNumber || 0;
+		// 	const targetDatetime = new Date(
+		// 		startDate + startTime + now.getTimezoneOffset() * 60 * 1000
+		// 	);
+		// 	if (targetDatetime < now) {
+		// 		return (utcTimeElm.text = 'now');
+		// 	}
+		// 	utcTimeElm.text = targetDatetime.toISOString();
+		// };
 
-		startDateElm.on(['keyup', 'change'], updateUTCTime);
-		startTimeElm.on(['keyup', 'change'], updateUTCTime);
-		if (startTimeElm.valueAsNumber || startDateElm.valueAsNumber) {
-			updateUTCTime();
-		}
-		const getSendTimeValue = (): number => {
-			const runAtString = utcTimeElm.text.trim();
-			if (!runAtString || runAtString === 'now') {
-				return null;
-			}
-			let runAtDate = null;
-			try {
-				runAtDate = new Date(runAtString);
-				if (!runAtDate.valueOf()) {
-					return null;
-				}
-			} catch (ex) {
-				return null;
-			}
-			return runAtDate.valueOf();
-		};
+		// startDateElm.on(['keyup', 'change'], updateUTCTime);
+		// startTimeElm.on(['keyup', 'change'], updateUTCTime);
+		// if (startTimeElm.valueAsNumber || startDateElm.valueAsNumber) {
+		// 	updateUTCTime();
+		// }
+		// const getSendTimeValue = (): number => {
+		// 	const runAtString = utcTimeElm.text.trim();
+		// 	if (!runAtString || runAtString === 'now') {
+		// 		return null;
+		// 	}
+		// 	let runAtDate = null;
+		// 	try {
+		// 		runAtDate = new Date(runAtString);
+		// 		if (!runAtDate.valueOf()) {
+		// 			return null;
+		// 		}
+		// 	} catch (ex) {
+		// 		return null;
+		// 	}
+		// 	return runAtDate.valueOf();
+		// };
 
 		const getSendTimeString = (sendTimeValue?: number): string => {
 			if (!sendTimeValue) {
@@ -295,6 +297,8 @@ onDOMReady(async () => {
 				}>;
 				templateId?: string;
 				runAt?: number;
+				subscriberRunAt?: string;
+				datetimeContext: 'utc' | 'subscriber';
 				list: string;
 				tags: string[];
 				excludeTags: string[];
@@ -325,7 +329,9 @@ onDOMReady(async () => {
 						};
 					})
 					.filter((template) => !!template.name),
-				runAt: getSendTimeValue(),
+				datetimeContext: broadcastTimeControl.getBroadcastTimeContext(),
+				runAt: broadcastTimeControl.getBroadcastTime(),
+				subscriberRunAt: broadcastTimeControl.getSubscriberBroadcastTime(),
 				list: listsControl.getList(),
 				tags: tagsControl.getTags(),
 				excludeTags: excludeTagsControl.getTags(),
@@ -387,7 +393,11 @@ onDOMReady(async () => {
 				confirmationMessage.push(new Elm('span', `\tWinning email variation selection method: ${broadcastData.winningType}`))
 			}
 			confirmationMessage.push(new Elm('br'))
-			confirmationMessage.push(new Elm('span', `At time: ${getSendTimeString(broadcastData.runAt)}`))
+			if (broadcastData.datetimeContext === 'subscriber') {
+				confirmationMessage.push(new Elm('span', `At date/time in the subscriber's time zone (approximate): ${broadcastData.subscriberRunAt.split('T').join(' at ')}`));
+			} else {
+				confirmationMessage.push(new Elm('span', `At time (approximate): ${getSendTimeString(broadcastData.runAt)}`))
+			}
 			confirmationMessage.push(new Elm('br'))
 			const hasFilterData =
 				broadcastData.tags.length ||

@@ -1,11 +1,21 @@
+const fs = require('fs');
 require('dotenv').config();
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+const package = JSON.parse(
+	fs.readFileSync(path.join(process.cwd(), 'package.json'))
+);
+const version = package.version;
+
+if (!version) {
+	throw new Error('Could not read version from package.json');
+}
+
 const baseUrl =
 	process.env.NODE_ENV === 'production'
-		? process.env.BASE_URL
+		? `${process.env.BASE_URL}/${version}`
 		: process.env.BASE_URL_DEV;
 
 module.exports = {

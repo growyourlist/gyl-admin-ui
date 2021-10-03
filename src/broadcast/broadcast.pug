@@ -207,18 +207,31 @@ include ../part-header.pug
 				input#tag-on-click.input(placeholder="exampleTag")
 		#broadcast-time-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 When do you want the broadcast to start sending?
+			p#broadcast-time-validation
 			p.
 				Leave blank to send straight away. Uses your local timezone and converts
-				to UTC time below. Will use current time if time set is in the past.
+				to UTC time below (if required). Will use current time if time set is in
+				the past.
 			div.date-time-control
 				label Date
 				input#start-send-at-date.input(placeholder="Date" type="date")
 				label Time
 				input#start-send-at-time.input(placeholder="Time" type="time")
-			p
-				span UTC Time:
+			p.
+				What timezone should be used for sending? (Note: if you choose
+				subscriber time, emails will be sent immediately to subscribers for whom
+				the date/time already lies in the past in their timezone).
+			select#datetime-context.input
+				option(value='local time' selected) my local time
+				option(value='subscriber time') subscriber time
+			p#utc-time-container
+				span Send at UTC Time:
 				<span> </span>
 				span#utc-time now
+			p#subscriber-time-container
+				span Send at Subscriber Time:
+				<span> </span>
+				span#subscriber-time now
 		#confirm-broadcast-container.box.p-l-1.p-r-1.p-b-1.m-b-1
 			h3 Confirm and send broadcast
 			#broadcast-validation-message
