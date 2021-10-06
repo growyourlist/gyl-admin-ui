@@ -102,9 +102,28 @@ module.exports = {
 	module: {
 		rules: [
 			{
+				test: /\.js$/,
+				use: [{
+					loader: 'babel-loader',
+					options: {
+						presets: ['@babel/preset-env']
+					}
+				}],
+			},
+			{
 				test: /\.ts$/,
-				use: 'ts-loader',
-				exclude: /node_modules/,
+				use: [{
+					loader: 'ts-loader',
+					options: {
+						compilerOptions: {
+							declaration: false,
+							target: 'es5',
+							module: 'commonjs'
+						},
+						transpileOnly: true
+					}
+				}],
+				exclude: /node_modules\/(?!(quill|parchment|ace-builds|mermaid)).*/,
 			},
 			{
 				test: /\.pug$/,
@@ -126,7 +145,8 @@ module.exports = {
 			},
 			{
 				test: /\.svg$/,
-				use: 'html-loader',
+				use: 'svg-inline-loader',
+				exclude: /node_modules\/(?!(quill)).*/,
 			},
 			{
 				test: /\.ttf$/,
@@ -135,24 +155,28 @@ module.exports = {
 		],
 	},
 	resolve: {
-		extensions: ['.ts', '.pug', '.js', '.scss', '.css'],
+		alias: {
+			'parchment': path.resolve(__dirname, 'node_modules/parchment/src/parchment.ts'),
+			'quill$': path.resolve(__dirname, 'node_modules/quill/quill.js')
+		},
+		extensions: ['.ts', '.pug', '.js', '.scss', '.css', '.svg'],
 	},
 	entry: {
-		gylBase: './src/common/gyl-base.ts',
-		index: './src/index.ts',
-		broadcast: './src/broadcast/broadcast.ts',
-		emails: './src/emails/emails.ts',
-		autoresponders: './src/autoresponders/autoresponders.ts',
-		lists: './src/lists/lists.ts',
-		viewer: './src/analytics/viewer.ts',
-		exportData: './src/export-data/export-data.ts',
-		tools: './src/tools/tools.ts',
+		gylBase: [ 'regenerator-runtime/runtime.js', './src/common/gyl-base.ts' ],
+		index: [ 'regenerator-runtime/runtime.js', './src/index.ts' ],
+		broadcast: [ 'regenerator-runtime/runtime.js', './src/broadcast/broadcast.ts' ],
+		emails: [ 'regenerator-runtime/runtime.js', './src/emails/emails.ts' ],
+		autoresponders: [ 'regenerator-runtime/runtime.js', './src/autoresponders/autoresponders.ts' ],
+		lists: [ 'regenerator-runtime/runtime.js', './src/lists/lists.ts' ],
+		viewer: [ 'regenerator-runtime/runtime.js', './src/analytics/viewer.ts' ],
+		exportData: [ 'regenerator-runtime/runtime.js', './src/export-data/export-data.ts' ],
+		tools: [ 'regenerator-runtime/runtime.js', './src/tools/tools.ts' ],
 	},
 	output: {
 		filename: `[name].js?v=${process.env.npm_package_version}`,
 		path: path.resolve(__dirname, 'dist'),
 	},
 	devServer: {
-		contentBase: path.join(__dirname, 'dist'),
+		static: path.join(__dirname, 'dist'),
 	},
 };
