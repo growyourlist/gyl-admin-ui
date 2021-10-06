@@ -1,3 +1,5 @@
+import 'regenerator-runtime/runtime';
+
 import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
 import * as mermaid from 'mermaid';
 import { apiRequest } from '../common/apiRequest';

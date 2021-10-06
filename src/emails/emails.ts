@@ -1,34 +1,12 @@
 import 'quill/dist/quill.core.css';
 import 'quill/dist/quill.snow.css';
 
-import Quill from 'quill/core';
-import Toolbar from 'quill/modules/toolbar';
-import Snow from 'quill/themes/snow';
-import Bold from 'quill/formats/bold';
-import Underline from 'quill/formats/underline';
-import Italic from 'quill/formats/italic';
-import List, { ListItem } from 'quill/formats/list';
-import Link from 'quill/formats/link';
-import Header from 'quill/formats/header';
-import CodeBlock from 'quill/formats/code';
-import Image from 'quill/formats/image';
+import Quill from 'quill';
 
-const ace = require('ace-builds');
+import * as ace from 'ace-builds';
+
 require('ace-builds/webpack-resolver');
 
-Quill.register({
-	'modules/toolbar': Toolbar,
-	'themes/snow': Snow,
-	'formats/bold': Bold,
-	'formats/underline': Underline,
-	'formats/italic': Italic,
-	'formats/header': Header,
-	'formats/list': List,
-	'formats/list-item': ListItem,
-	'formats/code-block': CodeBlock,
-	'formats/link': Link,
-	'formats/image': Image,
-});
 
 import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
 import { apiRequest } from '../common/apiRequest';

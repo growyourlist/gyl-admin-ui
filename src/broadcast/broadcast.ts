@@ -454,6 +454,7 @@ onDOMReady(async () => {
 							} (local time)`
 						)
 					)
+					confirmationMessage.push(new Elm('br'));
 				}
 				if (Object.keys(broadcastData.properties).length) {
 					confirmationMessage.push(
