@@ -123,6 +123,9 @@ export class HSHElement {
 		if (this._element instanceof HTMLTextAreaElement) {
 			(<HTMLTextAreaElement>this._element).value = value;
 		}
+		if (this._element instanceof HTMLSelectElement) {
+			(<HTMLSelectElement>this._element).value = value;
+		}
 	}
 
 	get element(): HTMLElement {
@@ -302,6 +305,12 @@ export class HSHElement {
 
 	isDisabled(): boolean {
 		return this._element.getAttribute('disabled') !== null;
+	}
+
+	setIframeHtml(html: string) {
+		if (this._element instanceof HTMLIFrameElement) {
+			this._element.srcdoc = html;
+		}
 	}
 
 	append(element: HTMLElement | Elm | Array<HTMLElement | Elm>): HSHElement {

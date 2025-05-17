@@ -16,24 +16,36 @@ include ../part-header.pug
 				label Email name
 				input#template-name.w-100.input
 			div
-				button#load-template-button.button.button.secondary Load Template With This Name
+				button#load-template-button.button.button.secondary Load Email With This Name
 				#load-template-button-container
 			p
 				label Email subject
 				input#template-subject.w-100.input
 			p
-				label
-					input#show-html-editor(type="checkbox" checked)
-					<span> </span>
-					span Show HTML editor
-			p
-				button#insert-postal-address.button.secondary Insert postal address
-				<span> </span>
-				button#insert-unsubscribe-link.button.secondary Insert unsubscribe link
-			#template-editor-wrapper.grid.left-1fr-right-1fr-m900
-				#template-editor-rendered
-					#template-editor
-				#template-editor-html(style='min-height:10em;')
+				label Email type
+				select#template-type.input.w-100
+					option#template-type-wrapped-html(value='wrapped html') wrapped html
+					option#template-type-full-html(value='full html') full html
+			div
+				#wrapped-html-editor
+					p
+						label
+							input#show-html-editor(type="checkbox" checked)
+							<span> </span>
+							span Show HTML editor
+					p
+						button#insert-postal-address.button.secondary Insert postal address
+						<span> </span>
+						button#insert-unsubscribe-link.button.secondary Insert unsubscribe link
+					#template-editor-wrapper.grid.left-1fr-right-1fr-m900
+						#template-editor-rendered
+							#template-editor
+						#template-editor-html(style='min-height:10em;')
+				#full-html-editor(style='display:none')
+					p Full HTML email (starts with &lt;DOCTYPE...)
+					textarea#full-html-editor-textarea.w-100.input(cols="30", rows="10")
+					p Preview 
+					iframe#full-html-preview.w-100(style="height:75vh;overflow:auto;border:1px solid grey;")
 			div#content-alert
 			p Text version of email
 			.m-b-0p5

@@ -27,6 +27,7 @@ const createOrUpdateTemplate = async (templateData: {
 	SubjectPart: string;
 	HtmlPart: string;
 	TextPart: string;
+	templateType?: 'full html' | 'wrapped html';
 }) => {
 	await apiRequest('/admin/template', {
 		method: 'POST',
@@ -81,6 +82,32 @@ onDOMReady(async () => {
 	const aceEditor = ace.edit('template-editor-html');
 	aceEditor.setTheme('ace/theme/monokai');
 	aceEditor.session.setMode('ace/mode/html');
+
+
+	const templateTypeSelect = byId('template-type');
+	const wrappedHtmlEditor = byId('wrapped-html-editor');
+	const fullHtmlEditorTextarea = byId('full-html-editor-textarea');
+	const fullHtmlPreview = byId('full-html-preview');
+	const fullHtmlEditor = byId('full-html-editor');
+	function switchEditorType() {
+		templateTypeSelect.value === 'wrapped html' ? wrappedHtmlEditor.show() : wrappedHtmlEditor.hide();
+		templateTypeSelect.value === 'full html' ? fullHtmlEditor.show() : fullHtmlEditor.hide();
+	}
+	switchEditorType();
+	templateTypeSelect.on('change', switchEditorType);
+	let updatePending = false;
+	function updateFullHtmlPreview() {
+		if (updatePending) {
+			return;
+		}
+		updatePending = true;
+		setTimeout(() => {
+			updatePending = false;
+			fullHtmlPreview.setIframeHtml(fullHtmlEditorTextarea.value.trim());
+		}, 100);
+	}
+	fullHtmlEditorTextarea.on(['keyup', 'paste', 'blur'], updateFullHtmlPreview);
+	fullHtmlPreview.setIframeHtml(fullHtmlEditorTextarea.value.trim());
 
 	const contentAlertElm = byId('content-alert');
 	const checkForPostalAddress = (range: any) => {
@@ -160,9 +187,7 @@ onDOMReady(async () => {
 		}
 	});
 
-	// Handle generate text button click
-	const generateTextButton = byId('generate-text-email-button');
-	generateTextButton.on('click', () => {
+	function getTextContentFromQuillEditor() {
 		let text = '';
 		const contentsDelta = (quillEditor.getContents() || { ops: [] }) as {
 			ops: any[];
@@ -192,6 +217,50 @@ onDOMReady(async () => {
 				}
 			}
 		}
+		return text;
+	}
+
+	function getTextContentFromFullHtmlEditor() {
+		const htmlParts1 = fullHtmlEditorTextarea.value.split('<body');
+		if (htmlParts1.length < 2) {
+			throw new Error('Could not find <body tag opening in HTML');
+		}
+		if (htmlParts1.length > 2) {
+			throw new Error('Found more than one <body tag opening in HTML');
+		}
+		const htmlParts2 = htmlParts1[1].split('</body');
+		if (htmlParts2.length < 2) {
+			throw new Error('Could not find </body tag opening in HTML');
+		}
+		if (htmlParts2.length > 2) {
+			throw new Error('Found more than one </body tag opening in HTML');
+		}
+		const htmlInbetweenBodyTagOpeningAndClosing = htmlParts2[0];
+		const firstGreaterThanSymbol = htmlInbetweenBodyTagOpeningAndClosing.indexOf('>');
+		const bodyHtml = htmlInbetweenBodyTagOpeningAndClosing.substring(firstGreaterThanSymbol + 1);
+		const tempDiv = document.createElement('div');
+		tempDiv.innerHTML = bodyHtml;
+		return tempDiv.textContent.split('\n')
+			.map(line => line.trim())
+			.filter(line => !!line.trim())
+			.join('\n')
+			.trim();
+	}
+
+	function getTextContentFromHtml() {
+		if (templateTypeSelect.value === 'wrapped html') {
+			return getTextContentFromQuillEditor();
+		}
+		if (templateTypeSelect.value === 'full html') {
+			return getTextContentFromFullHtmlEditor();
+		}
+		return '';
+	}
+
+	// Handle generate text button click
+	const generateTextButton = byId('generate-text-email-button');
+	generateTextButton.on('click', () => {
+		const text = getTextContentFromHtml();
 		byId('template-text').value = text;
 	});
 
@@ -238,11 +307,26 @@ onDOMReady(async () => {
 		const templateData = await templateResponse.json();
 		templateNameElm.value = templateData.TemplateName;
 		templateSubjectElm.value = templateData.SubjectPart;
-		quillEditor.root.innerHTML = templateData.HtmlPart.replace(
-			/>\n</g,
-			''
-		).replace(/\n/, ' ');
-		templateTextElm.value = templateData.TextPart;
+		switch (templateData.templateType) {
+			case 'full html':
+				fullHtmlEditorTextarea.value = templateData.HtmlPart;
+				templateTextElm.value = templateData.TextPart;
+				templateTypeSelect.value = 'full html';
+				wrappedHtmlEditor.hide();
+				fullHtmlEditor.show();
+				break;
+			case 'wrapped html':
+			default:
+				quillEditor.root.innerHTML = templateData.HtmlPart.replace(
+					/>\n</g,
+					''
+				).replace(/\n/, ' ');
+				templateTextElm.value = templateData.TextPart;
+				templateTypeSelect.value = 'wrapped html';
+				wrappedHtmlEditor.show();
+				fullHtmlEditor.hide();
+				break;
+		}
 	};
 
 	// Load the email list on a separate thread
@@ -374,6 +458,15 @@ onDOMReady(async () => {
 	};
 	loadTemplateList();
 
+	function getTemplateHtml() {
+		if (templateTypeSelect.value === 'full html') {
+			return fullHtmlEditorTextarea.value;
+		}
+		// if (templateTypeSelect.value === 'wrapped html') {
+			return quillEditor.root.innerHTML;
+		// }
+	}
+
 	const sendTestEmailButton = byId('send-test-email-button');
 	const testEmailStatus = byId('test-email-status');
 	sendTestEmailButton.on('click', async () => {
@@ -403,7 +496,7 @@ onDOMReady(async () => {
 				postData.subject = templateSubjectElm.value;
 				postData.body = {
 						text: templateTextElm.value,
-						html: quillEditor.root.innerHTML,
+						html: getTemplateHtml(),
 				}
 			} else {
 				postData.templateId = templateNameElm.value
@@ -444,8 +537,9 @@ onDOMReady(async () => {
 			await createOrUpdateTemplate({
 				TemplateName: templateNameElm.value,
 				SubjectPart: templateSubjectElm.value,
-				HtmlPart: quillEditor.root.innerHTML,
+				HtmlPart: getTemplateHtml(),
 				TextPart: templateTextElm.value,
+				templateType: templateTypeSelect.value as ("full html" | "wrapped html"),
 			});
 			let existing: HSHElement | null = null;
 			if (emailList.text.indexOf('No emails') >= 0) {

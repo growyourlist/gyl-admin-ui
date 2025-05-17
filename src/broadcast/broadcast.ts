@@ -232,46 +232,6 @@ onDOMReady(async () => {
 			broadcastTagsContainer.show();
 		};
 
-		// const startDateElm = byId('start-send-at-date');
-		// const startTimeElm = byId('start-send-at-time');
-		// const utcTimeElm = byId('utc-time');
-		// const updateUTCTime = () => {
-		// 	const now = new Date();
-		// 	const startDate =
-		// 		startDateElm.valueAsNumber ||
-		// 		Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-		// 	const startTime = startTimeElm.valueAsNumber || 0;
-		// 	const targetDatetime = new Date(
-		// 		startDate + startTime + now.getTimezoneOffset() * 60 * 1000
-		// 	);
-		// 	if (targetDatetime < now) {
-		// 		return (utcTimeElm.text = 'now');
-		// 	}
-		// 	utcTimeElm.text = targetDatetime.toISOString();
-		// };
-
-		// startDateElm.on(['keyup', 'change'], updateUTCTime);
-		// startTimeElm.on(['keyup', 'change'], updateUTCTime);
-		// if (startTimeElm.valueAsNumber || startDateElm.valueAsNumber) {
-		// 	updateUTCTime();
-		// }
-		// const getSendTimeValue = (): number => {
-		// 	const runAtString = utcTimeElm.text.trim();
-		// 	if (!runAtString || runAtString === 'now') {
-		// 		return null;
-		// 	}
-		// 	let runAtDate = null;
-		// 	try {
-		// 		runAtDate = new Date(runAtString);
-		// 		if (!runAtDate.valueOf()) {
-		// 			return null;
-		// 		}
-		// 	} catch (ex) {
-		// 		return null;
-		// 	}
-		// 	return runAtDate.valueOf();
-		// };
-
 		const getSendTimeString = (sendTimeValue?: number): string => {
 			if (!sendTimeValue) {
 				return 'right now';

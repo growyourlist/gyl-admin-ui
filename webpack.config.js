@@ -16,13 +16,13 @@ if (!version) {
 const baseUrl =
 	process.env.NODE_ENV === 'production'
 		? `${process.env.BASE_URL}/${version}`
-		: process.env.BASE_URL_DEV;
+		: `${process.env.BASE_URL_DEV}/${version}`;
 
 module.exports = {
 	entry: './src/index.ts',
 	plugins: [
 		new MiniCssExtractPlugin({
-			filename: '[name].css',
+			filename: `[name].css`,
 			chunkFilename: '[id].css',
 			ignoreOrder: false,
 		}),
@@ -31,72 +31,56 @@ module.exports = {
 			inject: 'body',
 			template: './src/index.pug',
 			chunks: ['gylBase', 'index'],
-			templateParameters: {
-				baseUrl,
-			},
+			templateParameters: { baseUrl },
 		}),
 		new HtmlWebpackPlugin({
 			filename: 'broadcast/index.html',
 			inject: 'body',
 			template: './src/broadcast/broadcast.pug',
 			chunks: ['gylBase', 'broadcast'],
-			templateParameters: {
-				baseUrl,
-			},
+			templateParameters: { baseUrl },
 		}),
 		new HtmlWebpackPlugin({
 			filename: 'emails/index.html',
 			inject: 'body',
 			template: './src/emails/emails.pug',
 			chunks: ['gylBase', 'emails'],
-			templateParameters: {
-				baseUrl,
-			},
+			templateParameters: { baseUrl },
 		}),
 		new HtmlWebpackPlugin({
 			filename: 'autoresponders/index.html',
 			inject: 'body',
 			template: './src/autoresponders/autoresponders.pug',
 			chunks: ['gylBase', 'autoresponders'],
-			templateParameters: {
-				baseUrl,
-			},
+			templateParameters: { baseUrl },
 		}),
 		new HtmlWebpackPlugin({
 			filename: 'lists/index.html',
 			inject: 'body',
 			template: './src/lists/lists.pug',
 			chunks: ['gylBase', 'lists'],
-			templateParameters: {
-				baseUrl,
-			},
+			templateParameters: { baseUrl },
 		}),
 		new HtmlWebpackPlugin({
 			filename: 'analytics/index.html',
 			inject: 'body',
 			template: './src/analytics/analytics.pug',
 			chunks: ['gylBase', 'viewer'],
-			templateParameters: {
-				baseUrl,
-			},
+			templateParameters: { baseUrl },
 		}),
 		new HtmlWebpackPlugin({
 			filename: 'export-data/index.html',
 			inject: 'body',
 			template: './src/export-data/export-data.pug',
 			chunks: ['gylBase', 'exportData'],
-			templateParameters: {
-				baseUrl,
-			},
+			templateParameters: { baseUrl },
 		}),
 		new HtmlWebpackPlugin({
 			filename: 'tools/index.html',
 			inject: 'body',
 			template: './src/tools/tools.pug',
 			chunks: ['gylBase', 'tools'],
-			templateParameters: {
-				baseUrl,
-			},
+			templateParameters: { baseUrl },
 		}),
 	],
 	module: {
@@ -136,7 +120,7 @@ module.exports = {
 					{
 						loader: MiniCssExtractPlugin.loader,
 						options: {
-							publicPath: '../',
+							publicPath: `/${version}/`,
 						},
 					},
 					'css-loader',
@@ -174,7 +158,8 @@ module.exports = {
 	},
 	output: {
 		filename: `[name].js?v=${process.env.npm_package_version}`,
-		path: path.resolve(__dirname, 'dist'),
+		path: path.resolve(__dirname, 'dist', process.env.npm_package_version),
+		publicPath: `/${process.env.npm_package_version}/`,
 	},
 	devServer: {
 		static: path.join(__dirname, 'dist'),
