@@ -169,9 +169,19 @@ include ../part-header.pug
 				the winner and the remainder of the list will receive this template.
 			#template-selection
 				div.m-b-0p5
-					span Selected email/s:
-					span#template-selection-list.m-l-0p3
-						em No email selected
+					div Selected email/s:
+						span#template-selection-list-placeholder: em 
+							| 
+							|
+							| No email selected
+					table.template-selection-table#template-selection-list(style='display:none')
+						thead.template-selection-header
+							tr
+								th.template-selection-th Email name
+								th.template-selection-th Send %
+								th.template-selection-th Sender
+								th.template-selection-th
+						tbody.template-selection-body
 				div
 					label(for="template-name") Add email
 				div

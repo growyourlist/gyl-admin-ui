@@ -6,7 +6,7 @@ import { TagsControl } from './tagsControl';
 import { PropertiesControl } from './propertiesControl';
 // eslint-disable-next-line no-unused-vars
 import { InteractionsControl } from './interactionsControl';
-import { apiRequest } from '../common/apiRequest';
+import { apiRequestOrThrow } from '../common/apiRequest';
 // eslint-disable-next-line no-unused-vars
 import { ListsControl } from './listsControl';
 // eslint-disable-next-line no-unused-vars
@@ -72,7 +72,7 @@ export class SubscriberCountControl {
 		let hitError = false;
 		do {
 			try {
-				const res = await apiRequest(`/admin/subscriber-count`);
+				const res = await apiRequestOrThrow(`/admin/subscriber-count`);
 				const statusResponse = await res.json();
 				this.countElm.text = statusResponse.count;
 				if (statusResponse.status === 'complete') {
@@ -102,7 +102,7 @@ export class SubscriberCountControl {
 		this.status.text = 'Counting... ';
 		this.button.disable();
 		try {
-			await apiRequest('/admin/subscriber-count', {
+			await apiRequestOrThrow('/admin/subscriber-count', {
 				method: 'POST',
 				body: JSON.stringify({
 					tags,

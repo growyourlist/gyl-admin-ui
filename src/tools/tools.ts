@@ -8,7 +8,7 @@ import {
 	bySelector,
 	byId,
 } from '../common/hsh/hsh';
-import { apiRequest } from '../common/apiRequest';
+import { apiRequestOrThrow } from '../common/apiRequest';
 
 const validateSubscriberEmail = (inputElm: HTMLInputElement): void => {
 	validateElement(inputElm, {
@@ -122,7 +122,7 @@ onDOMReady(() => {
 				email,
 				tags,
 			});
-			await apiRequest('/admin/subscriber', {
+			await apiRequestOrThrow('/admin/subscriber', {
 				method: 'POST',
 				body: JSON.stringify(subscriber),
 			});
@@ -154,7 +154,7 @@ onDOMReady(() => {
 			errorContainer.clear();
 			const email = subscriberInfoEmailInput.value;
 			getSubscriberButton.disable();
-			const subscriberResponse = await apiRequest(
+			const subscriberResponse = await apiRequestOrThrow(
 				`/admin/subscriber?email=${encodeURIComponent(email)}`
 			);
 			const subscriber = await subscriberResponse.json();
@@ -231,7 +231,7 @@ onDOMReady(() => {
 													)
 												)
 											))
-											const deleteRes = await apiRequest(
+											const deleteRes = await apiRequestOrThrow(
 												`/admin/subscriber?subscriberId=${subscriber.subscriberId}`,
 												{
 													method: 'DELETE'
@@ -346,7 +346,7 @@ onDOMReady(() => {
 		getItemsButton.disable();
 		try {
 			const email = subscriberEmailInput.value;
-			const itemsResponse = await apiRequest(
+			const itemsResponse = await apiRequestOrThrow(
 				`/admin/subscriber/queue?email=${email}`
 			);
 			const items = await itemsResponse.json();
@@ -497,7 +497,7 @@ onDOMReady(() => {
 	const handleAuthPingButtonClick = async () => {
 		const resultContainer = firstBySelector('.auth-ping-result-container');
 		try {
-			const pingResponse = await apiRequest('/auth-ping');
+			const pingResponse = await apiRequestOrThrow('/auth-ping');
 			const data = await pingResponse.json();
 			resultContainer.prepend(
 				new Elm({ type: 'pre' }, [
@@ -556,7 +556,7 @@ onDOMReady(() => {
 			let count = 0;
 			let batch = importData.data.splice(0, batchSize);
 			do {
-				await apiRequest('/admin/subscribers', {
+				await apiRequestOrThrow('/admin/subscribers', {
 					method: 'POST',
 					body: JSON.stringify({
 						opts: {

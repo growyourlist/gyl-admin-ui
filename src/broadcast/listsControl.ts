@@ -8,12 +8,10 @@ import { List, fetchListsList } from '../common/api';
 export class ListsControl {
 	private container: HSHElement;
 	private listElement: HSHElement;
-	private changeListeners: (() => {})[];
 
 	constructor(selector: string) {
 		this.container = firstBySelector(selector);
 		this.listElement = this.container.query('#lists-list');
-		this.changeListeners = [];
 	}
 
 	private renderLists(lists: List[]) {

@@ -1,6 +1,6 @@
 import { scaleOrdinal, schemeDark2, scaleTime, extent, scaleLinear, max, select as d3select, axisLeft, axisBottom, line } from 'd3'
 
-import { apiRequest } from '../common/apiRequest'
+import { apiRequestOrThrow } from '../common/apiRequest'
 import { onDOMReady, byId, Elm } from '../common/hsh/hsh'
 
 const updateSendDates = (templateHistory: any[]): void => {
@@ -45,7 +45,7 @@ onDOMReady(async () => {
 	let graphInfo: any = {}
 	const loadingMessage = byId('analytics-loading-message')
 	loadingMessage.text = 'Loading...'
-	const emailHistoryResponse = await apiRequest('/admin/email-history')
+	const emailHistoryResponse = await apiRequestOrThrow('/admin/email-history')
 	const emailHistory = await emailHistoryResponse.json()
 	const emailHistoryElm = byId('email-select')
 	const templateIds = Object.keys(emailHistory)
@@ -192,7 +192,7 @@ onDOMReady(async () => {
 			graphInfo.templateId = emailHistoryElm.value
 			graphInfo.date = sentOnDate.value
 			const params = `templateId=${encodeURIComponent(graphInfo.templateId)}&date=${encodeURIComponent(graphInfo.date)}`
-			const analyticsResponse = await apiRequest(`/admin/analytics?${params}`)
+			const analyticsResponse = await apiRequestOrThrow(`/admin/analytics?${params}`)
 			if (!analyticsResponse.ok) {
 				throw new Error(`Failed to retrieve data. Response: ${analyticsResponse.status} ${analyticsResponse.statusText}`)
 			}

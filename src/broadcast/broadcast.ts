@@ -4,7 +4,7 @@ import { PropertiesControl } from './propertiesControl';
 import { InteractionsControl } from './interactionsControl';
 import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
 import { SubscriberCountControl } from './subscriberCountControl';
-import { apiRequest } from '../common/apiRequest';
+import { apiRequestOrThrow } from '../common/apiRequest';
 import { loadTemplates } from '../common/loadTemplates';
 import { createTemplateListElm } from '../common/createTemplateListElm';
 import { InteractionWithAnyEmailControl } from './InteractionWithAnyEmailControl';
@@ -12,6 +12,7 @@ import { IgnoreConfirmedControl } from './IgnoreConfirmedControl';
 import { WinningTypeControl } from './WinningTypeControl';
 import { JoinedAfterControl } from './joinedAfterControl';
 import { BroadcastTimeControl } from './broadcastTimeControl';
+import { SourceEmailControl } from './sourceEmailControl';
 
 const getInteractionString: (interaction: {
 	emailDate: string;
@@ -21,9 +22,8 @@ const getInteractionString: (interaction: {
 	received?: boolean;
 }) => string = (interaction) => {
 	if (typeof interaction.received !== 'undefined') {
-		return `${interaction.received ? 'received' : 'did not receive'} ${
-			interaction.templateId
-		} (sent ${interaction.emailDate})`;
+		return `${interaction.received ? 'received' : 'did not receive'} ${interaction.templateId
+			} (sent ${interaction.emailDate})`;
 	}
 	let output = '';
 	if (typeof interaction.open !== 'undefined') {
@@ -56,6 +56,7 @@ onDOMReady(async () => {
 		const broadcastValidationMessage = byId('broadcast-validation-message');
 		const useTemplateButton = byId('select-template-button');
 		const templateSelectionList = byId('template-selection-list');
+		const templateSelectionListPlaceholder = byId('template-selection-list-placeholder')
 		const listsControl = new ListsControl('#lists-container');
 		listsControl.loadLists();
 		const tagsControl = new TagsControl('#tags-container');
@@ -78,6 +79,22 @@ onDOMReady(async () => {
 		const winningTypeControl = new WinningTypeControl(
 			'#winning-type-container'
 		);
+
+		/** keeps test %’s correct + shows/hides winner UI */
+		const updatePercentages = () => {
+			const spans = templateSelectionList.queryAll('.test-send-percentage');
+			const count = spans.length;
+			if (!count) {
+				templateSelectionList.clear();
+				templateSelectionList.append(new Elm('em', 'No email selected'));
+				winningTypeControl.hide();
+				return;
+			}
+			const percent = Math.round(1000 / count) / 10;
+			spans.forEach((s) => (s.text = percent.toString()));
+			count > 1 ? winningTypeControl.show() : winningTypeControl.hide();
+		};
+
 		const countControl = new SubscriberCountControl(
 			'#subscriber-count-container',
 			listsControl,
@@ -90,92 +107,101 @@ onDOMReady(async () => {
 			ignoreConfirmedControl
 		);
 
-		const addTemplateToTemplateSelectionList = (templateName: string) => {
-			const isFirst = templateSelectionList.text.trim() === 'No email selected';
-			if (isFirst) {
-				templateSelectionList.clear();
+		const addTemplateToTemplateSelectionList = async (templateName: string) => {
+			const isFirstTemplate = !templateSelectionList.query('.selected-template-name-container');
+			if (isFirstTemplate) {
+				templateSelectionListPlaceholder.hide()
+				templateSelectionList.show()
 			}
-			const elements: Array<string | Elm> = [];
-			const existingTemplatesPercentageSpans: Array<HSHElement> = templateSelectionList.queryAll(
-				'.test-send-percentage'
-			);
-			const templateCount = existingTemplatesPercentageSpans.length + 1;
-			const equalTestPercent = Math.round(1000 / (templateCount || 1)) / 10;
-			if (!isFirst) {
-				elements.push(', ');
-			}
-			elements.push(
-				new Elm({
-					type: 'span',
-					class: 'selected-template-name',
-					text: templateName,
-				})
-			);
-			elements.push(' (');
-			elements.push(
-				new Elm({
-					type: 'span',
-					class: 'test-send-percentage',
-					text: equalTestPercent.toString(),
-				})
-			);
-			elements.push('%) ');
-			elements.push(
+
+			// Create the row to display the selected template email
+			const row = new Elm({
+				type: 'tr',
+				class: 'template-selection-row selected-template-name-container',
+			}).toHTMLElement();
+
+			// 1) Email template name cell
+			row.appendChild(new Elm({
+				type: 'td',
+				class: 'template-selection-cell template-name-cell selected-template-name',
+				text: templateName,
+			}).toHTMLElement());
+
+			// 2) Send percentage cell
+			const percentageCell = new Elm({
+				type: 'td',
+				class: 'template-selection-cell percentage-cell',
+			}).toHTMLElement();
+			percentageCell.appendChild(new Elm({
+				type: 'span',
+				class: 'test-send-percentage test-send-percentage',
+				text: '0',
+			}).toHTMLElement());
+			row.appendChild(percentageCell);
+
+			// 3) Sender placeholder cell
+			const senderCell = new Elm({
+				type: 'td',
+				class: 'template-selection-cell sender-cell',
+				text: 'Loading...'
+			}).toHTMLElement();
+			row.appendChild(senderCell);
+
+			// 4) Actions cell (remove button)
+			const actionCell = new Elm({
+				type: 'td',
+				class: 'template-selection-cell actions-cell',
+			}).toHTMLElement();
+			actionCell.appendChild(
 				new Elm({
 					type: 'button',
 					class: 'button minor inline',
 					text: 'Remove',
 					events: {
-						click: (event) => {
-							const elm = new HSHElement(event.target);
-							const wrapper = elm.parentUntil((p) =>
-								p.classes.contains('selected-template-name-container')
-							);
-							wrapper.removeSelf();
-							const firstTemplate = templateSelectionList.query(
-								'.selected-template-name-container'
-							);
-							if (firstTemplate) {
-								if (firstTemplate.text.startsWith(',')) {
-									firstTemplate.removeChild(firstTemplate.childNodes[0]);
-								}
-							} else {
-								templateSelectionList.append(
-									new Elm('em', 'No email selected')
-								);
-							}
-							const percentageSpans: Array<HSHElement> = templateSelectionList.queryAll(
-								'.test-send-percentage'
-							);
-							const updatedTemplateCount = percentageSpans.length;
-							const updatedPercent =
-								Math.round(1000 / (updatedTemplateCount || 1)) / 10;
-							for (let i = 0; i < percentageSpans.length; i++) {
-								percentageSpans[i].text = updatedPercent.toString();
-							}
-							if (updatedTemplateCount < 2) {
-								winningTypeControl.hide();
+						click: () => {
+							row.remove();
+							updatePercentages();
+							const isSelectionEmpty = !templateSelectionList.query('.selected-template-name-container');
+							if (isSelectionEmpty) {
+								templateSelectionList.hide()
+								templateSelectionListPlaceholder.show()
 							}
 						},
 					},
-				})
+				}).toHTMLElement()
 			);
-			templateSelectionList.append(
-				new Elm(
-					{
+			row.appendChild(actionCell);
+
+			// append to table and recalc percentages
+			templateSelectionList.query('.template-selection-body')?.append(row);
+			updatePercentages();
+
+			// fetch sender name and fill into sender-cell
+			try {
+				const res = await apiRequestOrThrow(
+					`/admin/template/?templateName=${encodeURIComponent(templateName)}`
+				);
+				if (!res.ok) {
+					throw new Error(`Invalid response getting template details: ${res.status}`)
+				}
+				const template = await res.json();
+				const senderCtrl = new SourceEmailControl({
+					templateName,
+					sourceEmail: template.sourceEmail || '',
+				});
+				new HSHElement(senderCell).clear()
+				senderCell.appendChild(senderCtrl.getElement());
+			} catch (error) {
+				console.error(error)
+				senderCell.appendChild(
+					new Elm({
 						type: 'span',
-						class: 'selected-template-name-container',
-					},
-					elements
-				)
-			);
-			existingTemplatesPercentageSpans.forEach(
-				(span) => (span.text = equalTestPercent.toString())
-			);
-			if (templateCount > 1) {
-				winningTypeControl.show();
+						class: 'status error',
+						text: `Error fetching sender: ${error?.message}`,
+					}).toHTMLElement()
+				);
 			}
-		};
+		}
 
 		useTemplateButton.on('click', () => {
 			const emailName = templateIdElm.value.trim();
@@ -282,12 +308,10 @@ onDOMReady(async () => {
 			} = {
 				templates: templateSelectionList
 					.queryAll('.selected-template-name-container')
-					.map((elm) => {
-						return {
-							name: elm.query('.selected-template-name')?.text,
-							testPercent: parseFloat(elm.query('.test-send-percentage')?.text),
-						};
-					})
+					.map((elm) => ({
+						name: elm.query('.selected-template-name')?.text,
+						testPercent: parseFloat(elm.query('.test-send-percentage')?.text)
+					}))
 					.filter((template) => !!template.name),
 				datetimeContext: broadcastTimeControl.getBroadcastTimeContext(),
 				runAt: broadcastTimeControl.getBroadcastTime(),
@@ -337,19 +361,18 @@ onDOMReady(async () => {
 			const confirmationMessage: Elm[] = [
 				new Elm(
 					'span',
-					`Send ${
-						broadcastData.templateId
-							? `email: ${broadcastData.templateId}`
-							: `email variations: ${broadcastData.templates
-									.map(
-										(template) => `${template.name} (${template.testPercent}%)`
-									)
-									.join(', ')}`
+					`Send ${broadcastData.templateId
+						? `email: ${broadcastData.templateId}`
+						: `email variations: ${broadcastData.templates
+							.map(
+								(template) => `${template.name} (${template.testPercent}%)`
+							)
+							.join(', ')}`
 					}`
 				)
 			];
 			if (Array.isArray(broadcastData.templates) && broadcastData.templates.length > 1) {
-				confirmationMessage.push(new Elm('br'))				
+				confirmationMessage.push(new Elm('br'))
 				confirmationMessage.push(new Elm('span', `\tWinning email variation selection method: ${broadcastData.winningType}`))
 			}
 			confirmationMessage.push(new Elm('br'))
@@ -407,10 +430,8 @@ onDOMReady(async () => {
 					confirmationMessage.push(
 						new Elm(
 							'span',
-							`  ${isFirstFilter ? '' : 'and '}who joined after: ${
-								new Date(broadcastData.joinedAfter).toUTCString()
-							} (UTC) / ${
-								new Date(broadcastData.joinedAfter).toLocaleString()
+							`  ${isFirstFilter ? '' : 'and '}who joined after: ${new Date(broadcastData.joinedAfter).toUTCString()
+							} (UTC) / ${new Date(broadcastData.joinedAfter).toLocaleString()
 							} (local time)`
 						)
 					)
@@ -455,9 +476,8 @@ onDOMReady(async () => {
 							attrs: {
 								style: 'color:#c6520d;font-weight:bold',
 							},
-							text: `  ⚠ ${
-								isFirstFilter ? '' : 'and '
-							}ignore whether or not subscribers have been confirmed`,
+							text: `  ⚠ ${isFirstFilter ? '' : 'and '
+								}ignore whether or not subscribers have been confirmed`,
 						})
 					);
 					confirmationMessage.push(new Elm('br'));
@@ -503,7 +523,7 @@ onDOMReady(async () => {
 				try {
 					confirmAndSendButton.disable();
 					cancelSendButton.disable();
-					await apiRequest('/admin/broadcast', {
+					await apiRequestOrThrow('/admin/broadcast', {
 						method: 'POST',
 						body: JSON.stringify(broadcastData),
 					});

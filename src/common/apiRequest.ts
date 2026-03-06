@@ -1,7 +1,7 @@
 import { showSiteError } from './showSiteError';
 import { Elm } from './hsh/hsh';
 
-export async function apiRequest(
+export async function apiRequestOrThrow(
 	input: RequestInfo,
 	init?: RequestInit
 ): Promise<Response> {

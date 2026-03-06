@@ -94,6 +94,7 @@ module.exports = {
 					}
 				}],
 			},
+			{ test: /\.mjs$/, type: 'javascript/auto' },
 			{
 				test: /\.ts$/,
 				use: [{
@@ -102,7 +103,7 @@ module.exports = {
 						compilerOptions: {
 							declaration: false,
 							target: 'es5',
-							module: 'commonjs'
+							module: 'esnext'
 						},
 						transpileOnly: true
 					}
@@ -143,7 +144,7 @@ module.exports = {
 			'parchment': path.resolve(__dirname, 'node_modules/parchment/src/parchment.ts'),
 			'quill$': path.resolve(__dirname, 'node_modules/quill/quill.js')
 		},
-		extensions: ['.ts', '.pug', '.js', '.scss', '.css', '.svg'],
+		extensions: ['.mjs', '.ts', '.pug', '.js', '.scss', '.css', '.svg'],
 	},
 	entry: {
 		gylBase: [ 'regenerator-runtime/runtime.js', './src/common/gyl-base.ts' ],

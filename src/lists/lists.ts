@@ -7,7 +7,7 @@ import {
 	HSHElement,
 } from '../common/hsh/hsh'
 import { validateElement } from '../common/validateElement'
-import { apiRequest } from '../common/apiRequest'
+import { apiRequestOrThrow } from '../common/apiRequest'
 
 /** Validates the list id input element */
 const validateListId = (inputElm: HTMLInputElement): void => {
@@ -405,7 +405,7 @@ onDOMReady(async () => {
 				class: 'status m-b-1',
 				text: 'Loading...'
 			}));
-			await apiRequest('/admin/list', {
+			await apiRequestOrThrow('/admin/list', {
 				method: 'POST',
 				body: JSON.stringify(list)
 			})

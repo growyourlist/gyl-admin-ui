@@ -817,3 +817,25 @@ body {
 	max-height: 50vh;
 	overflow-y: auto;
 }
+
+.template-selection-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.template-selection-th,
+.template-selection-cell {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.template-selection-th {
+  font-weight: 600;
+}
+
+.text-placeholder {
+  font-style: italic;
+  color: rgb(105, 105, 105);
+  font-weight: 300;
+}

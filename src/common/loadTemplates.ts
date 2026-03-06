@@ -1,11 +1,11 @@
-import { apiRequest } from "./apiRequest";
+import { apiRequestOrThrow } from "./apiRequest";
 
 export const loadTemplates = async (callback: (templates: any[]) => any) => {
 	let nextToken = '';
 	let templates: any[] = [];
 	try {
 		do {
-			const response = await apiRequest(
+			const response = await apiRequestOrThrow(
 				`/admin/templates${nextToken &&
 					`?nextToken=${encodeURIComponent(nextToken)}`}`
 			);

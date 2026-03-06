@@ -9,14 +9,14 @@ require('ace-builds/webpack-resolver');
 
 
 import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
-import { apiRequest } from '../common/apiRequest';
+import { apiRequestOrThrow } from '../common/apiRequest';
 import { confirmDelete } from '../common/confirmDelete';
 import './email.scss';
 
 const newLinePattern = /(<\/div>|<\/p>|<\/h[1-6]>|<\/[ou]l>|<[ou]l>|<\/li>|<br ?\/?>)(?!\n)/g;
 
 const deleteTemplate = async (templateName: string) => {
-	await apiRequest('/admin/template', {
+	await apiRequestOrThrow('/admin/template', {
 		method: 'DELETE',
 		body: JSON.stringify({ TemplateName: templateName }),
 	});
@@ -29,14 +29,14 @@ const createOrUpdateTemplate = async (templateData: {
 	TextPart: string;
 	templateType?: 'full html' | 'wrapped html';
 }) => {
-	await apiRequest('/admin/template', {
+	await apiRequestOrThrow('/admin/template', {
 		method: 'POST',
 		body: JSON.stringify(templateData),
 	});
 };
 
 const getTemplateList = async (nextToken?: string) => {
-	const response = await apiRequest(
+	const response = await apiRequestOrThrow(
 		`/admin/templates${
 			nextToken ? `?nextToken=${encodeURIComponent(nextToken)}` : ''
 		}`
@@ -45,12 +45,12 @@ const getTemplateList = async (nextToken?: string) => {
 };
 
 const getPostalAddress = async () => {
-	const response = await apiRequest('/admin/postal-address');
+	const response = await apiRequestOrThrow('/admin/postal-address');
 	return await response.json();
 };
 
 const getUnsubscribeLink = async () => {
-	const response = await apiRequest('/admin/unsubscribe-link');
+	const response = await apiRequestOrThrow('/admin/unsubscribe-link');
 	return await response.json();
 };
 
@@ -301,7 +301,7 @@ onDOMReady(async () => {
 	templateTextElm.value = '';
 
 	const loadTemplateIntoEditor = async (templateName: string) => {
-		const templateResponse = await apiRequest(
+		const templateResponse = await apiRequestOrThrow(
 			`/admin/template?templateName=${encodeURIComponent(templateName)}`
 		);
 		const templateData = await templateResponse.json();
@@ -501,7 +501,7 @@ onDOMReady(async () => {
 			} else {
 				postData.templateId = templateNameElm.value
 			}
-			await apiRequest('/admin/single-email-send', {
+			await apiRequestOrThrow('/admin/single-email-send', {
 				method: 'POST',
 				body: JSON.stringify(postData),
 			})

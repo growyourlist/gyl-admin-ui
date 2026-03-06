@@ -5,7 +5,7 @@ import {
 	bySelector,
 	firstBySelector,
 } from '../common/hsh/hsh';
-import { apiRequest } from '../common/apiRequest';
+import { apiRequestOrThrow } from '../common/apiRequest';
 
 export class InteractionWithAnyEmailControl {
 	private wrapper: HSHElement;

@@ -1,4 +1,4 @@
-import { apiRequest } from "./apiRequest"
+import { apiRequestOrThrow } from "./apiRequest"
 
 export interface List {
 	name: string
@@ -7,13 +7,13 @@ export interface List {
 }
 
 export const fetchListsList = async (): Promise<List[]> => {
-	const response = await apiRequest('/admin/lists')
+	const response = await apiRequestOrThrow('/admin/lists')
 	const lists = await response.json()
 	return <List[]>lists
 }
 
 export const postList = async (list: List): Promise<string> => {
-	const response = await apiRequest('/admin/list', {
+	const response = await apiRequestOrThrow('/admin/list', {
 		method: 'POST',
 		body: JSON.stringify(list)
 	})

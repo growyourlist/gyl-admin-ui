@@ -5,7 +5,7 @@ import {
 	bySelector,
 	firstBySelector,
 } from '../common/hsh/hsh';
-import { apiRequest } from '../common/apiRequest';
+import { apiRequestOrThrow } from '../common/apiRequest';
 
 export class InteractionsControl {
 	private interactionsContainer: HSHElement;
@@ -67,7 +67,7 @@ export class InteractionsControl {
 	}
 
 	async loadEmailHistory() {
-		const historyRes = await apiRequest('/admin/email-history');
+		const historyRes = await apiRequestOrThrow('/admin/email-history');
 		const emailHistory = await historyRes.json();
 		const templateIds = Object.keys(emailHistory);
 		templateIds.sort((a, b) =>

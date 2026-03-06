@@ -1,8 +1,8 @@
 import 'regenerator-runtime/runtime';
 
 import { onDOMReady, byId, Elm, HSHElement } from '../common/hsh/hsh';
-import * as mermaid from 'mermaid';
-import { apiRequest } from '../common/apiRequest';
+import mermaid from 'mermaid';
+import { apiRequestOrThrow } from '../common/apiRequest';
 import { confirmDelete } from '../common/confirmDelete';
 import { createTemplateListElm } from '../common/createTemplateListElm';
 import { loadTemplates } from '../common/loadTemplates';
@@ -75,8 +75,6 @@ const isValidStepName = (stepName: string) => {
 	return true;
 };
 
-const mermaidAPI = mermaid.default.mermaidAPI;
-
 /** When the dom is ready... */
 onDOMReady(async () => {
 	let idToStepName: { [key: string]: string } = {};
@@ -90,7 +88,7 @@ onDOMReady(async () => {
 	const listStatusElm = byId('autoresponder-list-loading-status');
 	const defaultTagReasonElm = byId('autoresponder-default-tag-reason');
 
-	mermaidAPI.initialize({
+	mermaid.mermaidAPI.initialize({
 		startOnLoad: false,
 		theme: 'neutral',
 		securityLevel: 'loose',
@@ -434,7 +432,7 @@ onDOMReady(async () => {
 		return [];
 	};
 
-	const drawAutoresponder = () => {
+	const drawAutoresponder = async () => {
 		const definition = getDefinition();
 		const { steps } = definition;
 		let graph: string = 'graph TD\n';
@@ -513,10 +511,9 @@ onDOMReady(async () => {
 			}
 		}
 		const id = `mermaid-${Date.now()}`;
-		mermaidAPI.render(id, graph, (svgCode, bindFunctions) => {
-			autoresponderContainer.html = svgCode;
-			bindFunctions(autoresponderContainer.element);
-		});
+		const { svg, bindFunctions } = await mermaid.render(id, graph);
+		autoresponderContainer.html = svg;
+		bindFunctions?.(autoresponderContainer.element);
 	};
 
 	const updateDefinition = (updatePacket: any, complete = false) => {
@@ -527,7 +524,7 @@ onDOMReady(async () => {
 				Object.assign({}, getDefinition(), updatePacket)
 			);
 		}
-		drawAutoresponder();
+		drawAutoresponder().catch(error => console.error(error));
 	};
 
 	const resetDefinition = () => {
@@ -720,7 +717,7 @@ onDOMReady(async () => {
 					new Elm({
 						type: 'input',
 						value: stepDef.templateId || '',
-						attrs: { id: 'template-id', class: 'input w-100' },
+						attrs: { id: 'template-id', class: 'input w-100', 'data-bwignore': 'true' },
 						events: {
 							focus: (event) =>
 								showTemplates(
@@ -885,7 +882,7 @@ onDOMReady(async () => {
 		showStepEditor(idToStepName[stepId]);
 	};
 
-	definitionElm.on('change', drawAutoresponder);
+	definitionElm.on('change', () => void drawAutoresponder());
 
 	const clearAutoresponderEditor = () => {
 		updateDefinition(
@@ -987,7 +984,7 @@ onDOMReady(async () => {
 	const postAutoresponderOutput = byId('post-autoresponder-output');
 	const postAutoresponder = async () => {
 		const autoresponderData = JSON.parse(definitionElm.value);
-		const response = await apiRequest('/admin/autoresponder', {
+		const response = await apiRequestOrThrow('/admin/autoresponder', {
 			method: 'POST',
 			body: JSON.stringify(setEmptyStrToNull(autoresponderData)),
 		});
@@ -1066,7 +1063,7 @@ onDOMReady(async () => {
 	const autoConfirmTagsSaveButton = byId('auto-confirm-tags-save-button');
 	const loadAutoConfirmTags = async () => {
 		try {
-			const res = await apiRequest('/admin/auto-confirm-tags');
+			const res = await apiRequestOrThrow('/admin/auto-confirm-tags');
 			console.log(res);
 			if (!res.ok) {
 				throw new Error(`${res.status} ${res.statusText}`);
@@ -1100,7 +1097,7 @@ onDOMReady(async () => {
 					text: 'Loading...',
 				})
 			);
-			const response = await apiRequest('/admin/auto-confirm-tags', {
+			const response = await apiRequestOrThrow('/admin/auto-confirm-tags', {
 				method: 'POST',
 				body: JSON.stringify({ autoConfirmTags: autoConfirmTagsInput.value }),
 			});
@@ -1132,7 +1129,7 @@ onDOMReady(async () => {
 	});
 
 	const loadAutoresponder = async (autoresponderId: string) => {
-		const autoresponderResponse = await apiRequest(
+		const autoresponderResponse = await apiRequestOrThrow(
 			`/admin/autoresponder?autoresponderId=${autoresponderId}`
 		);
 		const autoresponderData = (await autoresponderResponse.json()) as Autoresponder;
@@ -1183,7 +1180,7 @@ onDOMReady(async () => {
 									liElement.style.color = 'grey';
 									liElement.queryAll('button').forEach((btn) => btn.hide());
 									try {
-										await apiRequest('/admin/autoresponder', {
+										await apiRequestOrThrow('/admin/autoresponder', {
 											method: 'DELETE',
 											body: JSON.stringify({ autoresponderId }),
 										});
@@ -1267,7 +1264,7 @@ onDOMReady(async () => {
 					text: 'Loading...',
 				})
 			);
-			const response = await apiRequest(
+			const response = await apiRequestOrThrow(
 				`/admin/autoresponders${
 					nextToken && `?nextToken=${encodeURIComponent(nextToken)}`
 				}`
